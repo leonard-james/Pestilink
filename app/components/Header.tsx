@@ -2,39 +2,48 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
+  const pathname = usePathname() || '/';
+
+  const nav = [
+    { name: 'Home', href: '/' },
+    { name: 'Services', href: '/services' },
+    { name: 'Contact Us', href: '/contact' },
+    { name: 'Sign Up', href: '/signup' },
+  ];
+
+  const linkClass = (href: string) => {
+    const isHome = href === '/';
+    const isActive = isHome ? pathname === '/' : pathname.startsWith(href);
+    return (
+      (isActive ? 'font-bold text-white' : 'text-white/90') +
+      ' px-3 py-2 text-sm hover:bg-white/10 transition rounded'
+    );
+  };
+
   return (
     <header className="absolute top-0 left-0 right-0 z-20">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6">
-        {/* Left side - Logo and brand */}
-          <div className="flex items-center gap-2">
-           <div className="h-10 w-10 rounded-md bg-gradient-to-br from-emerald-500 to-lime-400 flex items-center justify-center font-bold text-black">
-                X
-              </div>
-            <div className="hidden flex-col leading-tight sm:flex">
-                <span className="text-sm font-bold uppercase text-emerald-200">
-                  PEST LINK
-                </span>
-              </div>
+        <div className="flex items-center gap-2">
+          <div className="h-10 w-10 rounded-md bg-gradient-to-br from-emerald-500 to-lime-400 flex items-center justify-center font-bold text-black">
+            X
           </div>
+          <div className="hidden flex-col leading-tight sm:flex">
+            <span className="text-sm font-bold uppercase text-emerald-200">
+              PEST LINK
+            </span>
+          </div>
+        </div>
 
-        {/* Right side - Nav items, Search and Login */}
         <div className="flex items-center gap-4">
-          <Link href="/" className="px-3 py-2 text-white text-sm hover:bg-white/10 transition">
-            Home
-          </Link>
-          <Link href="/services" className="px-3 py-2 text-white text-sm hover:bg-white/10 transition">
-            Services
-          </Link>
-          <Link href="/contact" className="px-3 py-2 text-white text-sm hover:bg-white/10 transition">
-            Contact Us
-          </Link>
-          <Link href="/signup" className="px-3 py-2 text-white text-sm hover:bg-white/10 transition">
-            Sign Up
-          </Link>
+          {nav.map((item) => (
+            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+              {item.name}
+            </Link>
+          ))}
 
-          {/* Search */}
           <div className="relative">
             <input
               type="search"
@@ -46,7 +55,6 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Login button */}
           <Link
             href="/login"
             className="flex items-center gap-2 rounded-full bg-[#0b2036] px-4 py-2 text-sm font-medium text-white"
