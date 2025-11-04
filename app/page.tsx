@@ -1,7 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function Home() {
+  const router = useRouter();
+
+  const handleSignUp = () => {
+    router.push("/signup"); // Redirect to the sign-up page
+  };
+
   return (
     <div className="min-h-screen w-full bg-black text-white">
       {/* Header / Nav */}
@@ -42,12 +49,7 @@ export default function Home() {
               >
                 Contact Us
               </Link>
-              <Link
-                href="#"
-                className="px-3 py-2 rounded-full bg-emerald-500 text-black text-sm font-semibold hover:opacity-95 transition"
-              >
-                Sign Up
-              </Link>
+              <SignUpButton />
             </div>
 
             {/* Search (now after nav buttons) */}
@@ -132,3 +134,17 @@ export default function Home() {
     </div>
   );
 }
+
+const SignUpButton = () => {
+  const router = useRouter();
+
+  const handleSignUp = () => {
+    router.push("/signup"); // Redirect to the sign-up page
+  };
+
+  return (
+    <button onClick={handleSignUp}>
+      Sign Up
+    </button>
+  );
+};
