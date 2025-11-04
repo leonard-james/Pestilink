@@ -1,8 +1,8 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function SignupModal() {
+export default function SignupModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
 
   function close() {
@@ -24,70 +24,47 @@ export default function SignupModal() {
   }
 
   return (
-    <div
-      onClick={close}
-      style={{
-        position: "fixed",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(0,0,0,0.5)",
-        zIndex: 9999,
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 760,
-          maxWidth: "92%",
-          borderRadius: 16,
-          padding: 40,
-          backdropFilter: "blur(6px)",
-          background: "rgba(255,255,255,0.04)",
-          color: "#fff",
-          textAlign: "center",
-        }}
-      >
-        <button
-          aria-label="Close"
-          onClick={close}
-          style={{
-            position: "absolute",
-            right: 20,
-            top: 18,
-            background: "transparent",
-            border: "none",
-            color: "#fff",
-            fontSize: 20,
-            cursor: "pointer",
-          }}
-        >
-          ×
-        </button>
-
-        <h1 style={{ margin: 0, fontSize: 32 }}>Sign up</h1>
-        <p style={{ marginTop: 8, color: "rgba(255,255,255,0.75)" }}>
-          Sign up to continue
-        </p>
-
-        <form onSubmit={onSubmit} style={{ display: "grid", gap: 12, marginTop: 16 }}>
-          <input name="name" placeholder="Name" required
-            style={{ padding: 12, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.03)", color: "#fff" }} />
-
-          <input name="email" type="email" placeholder="Email" required
-            style={{ padding: 12, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.03)", color: "#fff" }} />
-
-          <input name="password" type="password" placeholder="Password" required
-            style={{ padding: 12, borderRadius: 6, border: "none", background: "rgba(255,255,255,0.03)", color: "#fff" }} />
-
-          <button type="submit" style={{ marginTop: 8, padding: 12, borderRadius: 999, background: "#000", color: "#fff", fontWeight: 700, border: "none", cursor: "pointer" }}>
-            SIGN UP
-          </button>
-        </form>
-      </div>
-    </div>
+    <>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black/60" onClick={onClose}></div>
+          
+          {/* Modal */}
+          <div className="relative z-50 w-full max-w-md rounded-lg bg-white p-6">
+            <button 
+              onClick={onClose}
+              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">Sign Up</h2>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input 
+                  type="email"
+                  className="mt-1 w-full rounded-md border p-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <input 
+                  type="password"
+                  className="mt-1 w-full rounded-md border p-2"
+                />
+              </div>
+              <button 
+                type="submit"
+                className="w-full rounded-md bg-[#0b2036] py-2 text-white hover:bg-[#12293b]"
+              >
+                Create Account
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

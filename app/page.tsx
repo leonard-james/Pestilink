@@ -1,14 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import SignUpButton from './components/SignUpButton';
 
 export default function Home() {
-  const router = useRouter();
-
-  const handleSignUp = () => {
-    router.push("/signup"); // Redirect to the sign-up page
-  };
-
   return (
     <div className="min-h-screen w-full bg-black text-white">
       {/* Header / Nav */}
@@ -84,7 +78,7 @@ export default function Home() {
           {/* Background image */}
           <Image
             src="/farm pic.jpg"
-            alt="Hero background"
+            alt="Farm background"
             fill
             className="object-cover"
             priority
@@ -134,17 +128,3 @@ export default function Home() {
     </div>
   );
 }
-
-const SignUpButton = () => {
-  const router = useRouter();
-
-  const handleSignUp = () => {
-    router.push("/signup"); // Redirect to the sign-up page
-  };
-
-  return (
-    <button onClick={handleSignUp}>
-      Sign Up
-    </button>
-  );
-};
