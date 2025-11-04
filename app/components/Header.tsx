@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import Input from './Input';
 
 export default function Header() {
   const pathname = usePathname() || '/';
@@ -10,17 +10,15 @@ export default function Header() {
   const nav = [
     { name: 'Home', href: '/' },
     { name: 'Services', href: '/services' },
-    { name: 'Contact Us', href: '/contact' },
-    { name: 'Sign Up', href: '/signup' },
+    { name: 'Contact Us', href: '/contact', className: 'whitespace-nowrap' },
+    { name: 'Sign Up', href: '/signup', className: 'whitespace-nowrap' },
   ];
 
-  const linkClass = (href: string) => {
+  const linkClass = (href: string, additionalClass = '') => {
     const isHome = href === '/';
     const isActive = isHome ? pathname === '/' : pathname.startsWith(href);
-    return (
-      (isActive ? 'font-bold text-white' : 'text-white/90') +
-      ' px-3 py-2 text-sm hover:bg-white/10 transition rounded'
-    );
+    return `${isActive ? 'font-bold text-white' : 'text-white/90'} 
+      px-3 py-2 text-sm hover:bg-white/10 transition rounded ${additionalClass}`;
   };
 
   return (
@@ -37,27 +35,29 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           {nav.map((item) => (
-            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+            <Link 
+              key={item.href} 
+              href={item.href} 
+              className={linkClass(item.href, item.className)}
+            >
               {item.name}
             </Link>
           ))}
 
-          <div className="relative">
-            <input
+          <div className="ml-2">
+            <Input
               type="search"
               placeholder="Search..."
-              className="h-10 w-64 rounded-full border border-white/20 bg-white/10 px-4 pr-10 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              icon="🔍"
+              className="w-64"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80">
-              🔍
-            </div>
           </div>
 
           <Link
-            href="/login"
-            className="flex items-center gap-2 rounded-full bg-[#0b2036] px-4 py-2 text-sm font-medium text-white"
+            href="login"
+            className="ml-2 flex items-center gap-2 rounded-full bg-[#0b2036] px-4 py-2 text-sm font-medium text-white whitespace-nowrap"
           >
             Log In
           </Link>
