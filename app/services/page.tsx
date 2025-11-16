@@ -122,13 +122,14 @@ export default function ServicesPage() {
 					{/* Dropdown buttons */}
 					<div className="flex gap-4 justify-center mb-6">
 						<Dropdown
-							label="Identifying pests"
-							options={['Insects', 'Rodents', 'Arachnids']}
+							title="Identifying pests"
+							options={['Pests', 'FAQ`s']}
 							onChange={setFilterType}
 						/>
+
 						<Dropdown
-							label="Pest management information"
-							options={['Indoor', 'Outdoor', 'Garden']}
+							title="Pest management information"
+							options={['Contact a Professionals', 'Pest Prevention Tips']}
 							onChange={setFilterLocation}
 						/>
 					</div>
