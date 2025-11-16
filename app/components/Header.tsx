@@ -13,7 +13,6 @@ export default function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    // Replace this with your real auth check if needed
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     setIsAuthenticated(Boolean(token));
   }, []);
@@ -32,7 +31,10 @@ export default function Header() {
   };
 
   const handleServicesClick = (e: React.MouseEvent) => {
-    // Do nothing - allow normal navigation
+    if (!isAuthenticated) {
+      e.preventDefault();
+      setShowAuthModal(true);
+    }
   };
 
   return (
@@ -70,12 +72,15 @@ export default function Header() {
             />
           </div>
 
-          <Link
-            href="login"
-            className="ml-2 flex items-center gap-2 rounded-full bg-[#0b2036] px-4 py-2 text-sm font-medium text-white whitespace-nowrap"
-          >
-            Log In
-          </Link>
+          {/* Hide Log In when on services page */}
+          { !pathname.startsWith('/services') && (
+            <Link
+              href="/login"
+              className="ml-2 flex items-center gap-2 rounded-full bg-[#0b2036] px-4 py-2 text-sm font-medium text-white whitespace-nowrap"
+            >
+              Log In
+            </Link>
+          )}
         </div>
       </nav>
 
