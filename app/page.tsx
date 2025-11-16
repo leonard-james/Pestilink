@@ -1,14 +1,14 @@
 import Image from "next/image";
-import Link from "next/link";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-full bg-black text-white">
+    <div className="min-h-screen w-full bg-black text-white flex flex-col">
       <Header />
 
       {/* Hero */}
-      <main className="relative z-10">
+      <main className="relative z-10 flex-1">
         <div className="relative h-screen">
           {/* Background image */}
           <Image
@@ -55,6 +55,8 @@ export default function Home() {
           <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/60 to-transparent"></div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

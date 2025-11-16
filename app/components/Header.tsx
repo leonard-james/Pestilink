@@ -21,7 +21,6 @@ export default function Header() {
   const nav = [
     { name: 'Home', href: '/' },
     { name: 'Services', href: '/services' },
-    { name: 'Contact Us', href: '/contact', className: 'whitespace-nowrap' },
     { name: 'Sign Up', href: '/signup', className: 'whitespace-nowrap' },
   ];
 
