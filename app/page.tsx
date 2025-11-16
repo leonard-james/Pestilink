@@ -1,8 +1,27 @@
+'use client';
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 export default function Home() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    setIsAuthenticated(Boolean(token));
+  }, []);
+
+  const handleGetStarted = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col">
       <Header />
@@ -43,6 +62,7 @@ export default function Home() {
 
               {/* Get Started Button */}
               <button
+                onClick={handleGetStarted}
                 className="px-8 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-full transition"
               >
                 Get Started →
@@ -55,6 +75,48 @@ export default function Home() {
           <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/60 to-transparent"></div>
         </div>
       </main>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowAuthModal(false)}
+          />
+          <div className="relative z-10 max-w-sm w-full bg-white text-black rounded-lg p-6 shadow-lg">
+            <h3 className="text-lg font-semibold mb-2">Please log in or sign up</h3>
+            <p className="mb-4 text-sm text-gray-700">
+              You need an account to access Services. Create one or log in to continue.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowAuthModal(false)}
+                className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowAuthModal(false);
+                  router.push('/login');
+                }}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Log in
+              </button>
+              <button
+                onClick={() => {
+                  setShowAuthModal(false);
+                  router.push('/signup');
+                }}
+                className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+              >
+                Sign up
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
