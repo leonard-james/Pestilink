@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import Header from '../components/Header';
+import Dropdown from '../components/Dropdown';
 import { useState, useRef } from 'react';
 
 const services = [
@@ -43,6 +44,8 @@ export default function ServicesPage() {
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [modalOpen, setModalOpen] = useState(false);
 	const [showDescription, setShowDescription] = useState(false);
+	const [filterType, setFilterType] = useState('');
+	const [filterLocation, setFilterLocation] = useState('');
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	const handleImageUpload = async (file: File) => {
@@ -114,6 +117,20 @@ export default function ServicesPage() {
 								/>
 							</svg>
 						</button>
+					</div>
+
+					{/* Dropdown buttons */}
+					<div className="flex gap-4 justify-center mb-6">
+						<Dropdown
+							label="Identifying pests"
+							options={['Insects', 'Rodents', 'Arachnids']}
+							onChange={setFilterType}
+						/>
+						<Dropdown
+							label="Pest management information"
+							options={['Indoor', 'Outdoor', 'Garden']}
+							onChange={setFilterLocation}
+						/>
 					</div>
 
 					<div className="flex items-center justify-center gap-2 text-white/80 text-sm mb-8">
