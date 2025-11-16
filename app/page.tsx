@@ -63,7 +63,7 @@ export default function Home() {
               {/* Get Started Button */}
               <button
                 onClick={handleGetStarted}
-                className="px-8 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-full transition"
+                className="px-8 py-3 bg-green-500 hover:bg-gray-600 text-white font-semibold rounded-full transition"
               >
                 Get Started →
               </button>
@@ -76,47 +76,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowAuthModal(false)}
-          />
-          <div className="relative z-10 max-w-sm w-full bg-white text-black rounded-lg p-6 shadow-lg">
-            <h3 className="text-lg font-semibold mb-2">Please log in or sign up</h3>
-            <p className="mb-4 text-sm text-gray-700">
-              You need an account to access Services. Create one or log in to continue.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowAuthModal(false)}
-                className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowAuthModal(false);
-                  router.push('/login');
-                }}
-                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Log in
-              </button>
-              <button
-                onClick={() => {
-                  setShowAuthModal(false);
-                  router.push('/signup');
-                }}
-                className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-              >
-                Sign up
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       <Footer />
     </div>

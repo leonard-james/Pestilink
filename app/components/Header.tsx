@@ -32,11 +32,7 @@ export default function Header() {
   };
 
   const handleServicesClick = (e: React.MouseEvent) => {
-    if (!isAuthenticated) {
-      e.preventDefault();
-      setShowAuthModal(true);
-    }
-    // if authenticated, Link will navigate normally
+    // Do nothing - allow normal navigation
   };
 
   return (
