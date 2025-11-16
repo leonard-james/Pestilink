@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import Header from "./components/Header";
 
 export default function Home() {
@@ -21,18 +22,31 @@ export default function Home() {
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-          {/* Content */}
-          <div className="absolute inset-0 mx-auto flex max-w-7xl items-center px-8">
-            <div className="max-w-2xl">
-              <h1 className="mb-6 max-w-lg text-4xl font-extrabold leading-[1.02] tracking-tight uppercase sm:text-5xl">
-                Solve your pest problems in one tap—for a pest-free Bulan!
-              </h1>
+          {/* Content - Centered */}
+          <div className="absolute inset-0 mx-auto flex max-w-7xl items-center justify-center px-8">
+            <div className="text-center max-w-2xl flex flex-col items-center">
+              
+              {/* Title Box */}
+              <div className="mb-6 bg-gray-600/30 px-8 py-6 rounded-lg">
+                <h1 className="text-3xl font-extrabold leading-tight tracking-tight uppercase sm:text-4xl">
+                  Solve your pest problems in one tap
+                </h1>
+              </div>
 
-              <p className="mb-8 max-w-lg text-lg text-white/80">
-                Identify pests instantly, access eco-friendly DIY tips, and connect
-                with trusted local pest control services —whether at home, on the
-                farm, or in your business.
-              </p>
+              {/* Description Box */}
+              <div className="mb-8 bg-gray-600/30 px-8 py-4 rounded-lg max-w-md">
+                <p className="text-base text-white leading-relaxed">
+                  Identify pests instantly, access eco-friendly DIY tips, and connect
+                  with trusted local pest control services.
+                </p>
+              </div>
+
+              {/* Get Started Button */}
+              <button
+                className="px-8 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-full transition"
+              >
+                Get Started →
+              </button>
 
             </div>
           </div>
