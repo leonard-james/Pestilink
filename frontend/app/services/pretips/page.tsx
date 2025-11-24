@@ -82,7 +82,7 @@ export default function PreTipsPage() {
     };
 
     return (
-        <div className="min-h-screen relative">
+        <div className="min-h-screen w-full bg-black text-white flex flex-col relative">
             {/* Header (fixed) */}
             <div className="fixed inset-x-0 top-0 z-[9999] pointer-events-auto">
                 <Header />
@@ -100,7 +100,7 @@ export default function PreTipsPage() {
             {/* gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
 
-            <div className="relative z-10 min-h-screen container mx-auto px-4 pt-28 pb-48">
+            <main className="relative z-10 flex-1 container mx-auto px-4 pt-28 pb-8">
                 <div className="max-w-3xl mx-auto text-center mb-6">
                     <div className="relative max-w-2xl mx-auto mb-4">
                         <input
@@ -212,7 +212,7 @@ export default function PreTipsPage() {
                         ))}
                     </div>
                 </div>
-            </div>
+            </main>
 
             {/* Result modal */}
             {modalOpen && (
@@ -289,9 +289,7 @@ export default function PreTipsPage() {
                     </div>
                 </div>
             )}
-
-            {/* Footer (fixed bottom) */}
-            <div className="fixed inset-x-0 bottom-0 z-[9999] pointer-events-auto">
+            <div className="relative z-10">
                 <Footer />
             </div>
         </div>
