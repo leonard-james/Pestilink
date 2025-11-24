@@ -1,9 +1,9 @@
 'use client';
 import Image from 'next/image';
-import Link from 'next/link';
 import Header from '../components/Header';
 import Dropdown from '../components/Dropdown';
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 const services = [
 	{
@@ -47,6 +47,7 @@ export default function ServicesPage() {
 	const [filterType, setFilterType] = useState('');
 	const [filterLocation, setFilterLocation] = useState('');
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const router = useRouter();
 
 	const handleImageUpload = async (file: File) => {
 		setSelectedImage(file);
@@ -65,7 +66,6 @@ export default function ServicesPage() {
 				body: formData,
 			});
 			const data = await res.json();
-			// Expecting { prediction: string, details: Array }
 			setPrediction(data?.prediction || '');
 			setDetails(data?.details || []);
 			setModalOpen(true);
@@ -130,7 +130,13 @@ export default function ServicesPage() {
 						<Dropdown
 							title="Pest management information"
 							options={['Contact a Professionals', 'Pest Prevention Tips']}
-							onChange={setFilterLocation}
+							onChange={(val: string) => {
+								if (val === 'Contact a Professionals') {
+									router.push('/services/professionals');
+								} else if (val === 'Pest Prevention Tips') {
+									router.push('/services/pretips');
+								}
+							}}
 						/>
 					</div>
 
@@ -177,37 +183,6 @@ export default function ServicesPage() {
 						<div className="text-white mb-4">Analyzing image...</div>
 					)}
 				</div>
-
-				{/* services list line */}
-				<div className="flex flex-nowrap gap-4 justify-center max-w-[95vw] mx-auto">
-					{services.map((service, index) => (
-						<div
-							key={index}
-							className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl p-6 text-white flex-shrink-0 w-[280px]"
-						>
-							<h3 className="text-lg font-bold mb-2">{service.name}</h3>
-
-							<div className="space-y-2 mb-4 text-sm">
-								<div className="flex items-start gap-2">
-									<span className="opacity-90">{service.location}</span>
-								</div>
-								<div className="flex items-start gap-2">
-									<span className="opacity-90">{service.phone}</span>
-								</div>
-								<div className="flex items-start gap-2">
-									<span className="opacity-90">{service.email}</span>
-								</div>
-							</div>
-
-							<Link
-								href={service.link}
-								className="inline-block w-full bg-[#0b2036] text-white py-2.5 rounded-lg hover:bg-[#12293b] text-center font-medium text-sm"
-							>
-								BOOK NOW
-							</Link>
-						</div>
-					))}
-				</div>
 			</div>
 
 			{/* Result modal */}
@@ -233,7 +208,6 @@ export default function ServicesPage() {
 
 							{previewUrl && (
 								<div className="mx-auto mb-4 w-56 h-56 rounded-md overflow-hidden border border-white/20">
-									{/* use native img for blob preview */}
 									<img
 										src={previewUrl}
 										alt="preview"

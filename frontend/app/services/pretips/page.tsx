@@ -1,44 +1,46 @@
 'use client';
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import Dropdown from '../../components/Dropdown';
 import { useRouter } from 'next/navigation';
 
-const services = [
+const preventionTips = [
     {
-        name: 'PestCon Services Inc.',
-        location: 'Zone 8, Bulan Sor.',
-        phone: '+63 999 111 5576',
-        email: 'pestconservices@gmail.com',
-        link: '#',
+        title: 'Eliminate Food Sources',
+        description: 'Keep kitchen clean, store food in airtight containers, and dispose of garbage properly.',
+        icon: '🍽️',
     },
     {
-        name: 'PestBegone!',
-        location: 'Fabrica, Bulan Sor.',
-        phone: '+63 978 165 9056',
-        email: 'pestbegone@gmail.com',
-        link: '#',
+        title: 'Remove Standing Water',
+        description: 'Drain stagnant water from containers, gutters, and pet bowls to prevent mosquito breeding.',
+        icon: '💧',
     },
     {
-        name: 'BugBuster Bulan',
-        location: 'Zone 2, Bulan Sor.',
-        phone: '+63 989 123 9456',
-        email: 'bugbusterbulan@gmail.com',
-        link: '#',
+        title: 'Seal Entry Points',
+        description: 'Caulk cracks, seal gaps around pipes, and install door sweeps to block pest entry.',
+        icon: '🔒',
     },
     {
-        name: 'PestPatrol Bulan',
-        location: 'Polot, Bulan Sor.',
-        phone: '+63 997 567 347',
-        email: 'pestpatrolbulan@gmail.com',
-        link: '#',
+        title: 'Maintain Cleanliness',
+        description: 'Vacuum regularly, wipe surfaces, and declutter to eliminate pest hiding spots.',
+        icon: '🧹',
+    },
+    {
+        title: 'Trim Vegetation',
+        description: 'Cut back bushes and tree branches away from your home to reduce pest harborage.',
+        icon: '✂️',
+    },
+    {
+        title: 'Store Firewood Properly',
+        description: 'Keep firewood stacks away from home and elevated off the ground.',
+        icon: '🪵',
     },
 ];
 
-export default function ServicesPage() {
+export default function PreTipsPage() {
+    const router = useRouter();
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [prediction, setPrediction] = useState<string>('');
@@ -49,7 +51,6 @@ export default function ServicesPage() {
     const [filterType, setFilterType] = useState('');
     const [filterLocation, setFilterLocation] = useState('');
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const router = useRouter();
 
     const handleImageUpload = async (file: File) => {
         setSelectedImage(file);
@@ -68,7 +69,6 @@ export default function ServicesPage() {
                 body: formData,
             });
             const data = await res.json();
-            // Expecting { prediction: string, details: Array }
             setPrediction(data?.prediction || '');
             setDetails(data?.details || []);
             setModalOpen(true);
@@ -83,10 +83,12 @@ export default function ServicesPage() {
 
     return (
         <div className="min-h-screen relative">
+            {/* Header (fixed) */}
             <div className="fixed inset-x-0 top-0 z-[9999] pointer-events-auto">
                 <Header />
             </div>
 
+            {/* Background image */}
             <Image
                 src="/farm pic.jpg"
                 alt="Farm background"
@@ -95,9 +97,10 @@ export default function ServicesPage() {
                 priority
             />
 
+            {/* gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
 
-            <div className="relative z-10 min-h-screen container mx-auto px-4 pt-28">
+            <div className="relative z-10 min-h-screen container mx-auto px-4 pt-28 pb-48">
                 <div className="max-w-3xl mx-auto text-center mb-6">
                     <div className="relative max-w-2xl mx-auto mb-4">
                         <input
@@ -138,6 +141,8 @@ export default function ServicesPage() {
                                     router.push('/services/professionals');
                                 } else if (val === 'Pest Prevention Tips') {
                                     router.push('/services/pretips');
+                                } else {
+                                    setFilterLocation(val);
                                 }
                             }}
                         />
@@ -187,35 +192,25 @@ export default function ServicesPage() {
                     )}
                 </div>
 
-                {/* services list line */}
-                <div className="flex flex-nowrap gap-4 justify-center max-w-[95vw] mx-auto">
-                    {services.map((service, index) => (
-                        <div
-                            key={index}
-                            className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl p-6 text-white flex-shrink-0 w-[280px]"
-                        >
-                            <h3 className="text-lg font-bold mb-2">{service.name}</h3>
-
-                            <div className="space-y-2 mb-4 text-sm">
-                                <div className="flex items-start gap-2">
-                                    <span className="opacity-90">{service.location}</span>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                    <span className="opacity-90">{service.phone}</span>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                    <span className="opacity-90">{service.email}</span>
-                                </div>
-                            </div>
-
-                            <Link
-                                href={service.link}
-                                className="inline-block w-full bg-[#0b2036] text-white py-2.5 rounded-lg hover:bg-[#12293b] text-center font-medium text-sm"
+                {/* Prevention Tips Grid */}
+                <div className="max-w-6xl mx-auto">
+                    <h1 className="text-center text-3xl font-bold text-white mb-12">
+                        Pest Prevention Tips
+                    </h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {preventionTips.map((tip, index) => (
+                            <div
+                                key={index}
+                                className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl p-6 text-white hover:bg-emerald-800/40 transition-all"
                             >
-                                BOOK NOW
-                            </Link>
-                        </div>
-                    ))}
+                                <div className="text-4xl mb-4">{tip.icon}</div>
+                                <h3 className="text-xl font-bold mb-3">{tip.title}</h3>
+                                <p className="text-white/80 text-sm leading-relaxed">
+                                    {tip.description}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -233,16 +228,11 @@ export default function ServicesPage() {
                                 Pest Identified!
                             </h2>
                             <p className="text-white/90 mb-4">
-                                {prediction ? (
-                                    <span className="text-lg font-medium">{prediction}</span>
-                                ) : (
-                                    <span className="text-sm">No clear identification</span>
-                                )}
+                                {prediction}
                             </p>
 
                             {previewUrl && (
                                 <div className="mx-auto mb-4 w-56 h-56 rounded-md overflow-hidden border border-white/20">
-                                    {/* use native img for blob preview */}
                                     <img
                                         src={previewUrl}
                                         alt="preview"
@@ -299,6 +289,11 @@ export default function ServicesPage() {
                     </div>
                 </div>
             )}
+
+            {/* Footer (fixed bottom) */}
+            <div className="fixed inset-x-0 bottom-0 z-[9999] pointer-events-auto">
+                <Footer />
+            </div>
         </div>
     );
 }
