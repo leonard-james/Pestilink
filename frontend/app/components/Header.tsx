@@ -63,14 +63,17 @@ export default function Header() {
             </Link>
           ))}
 
-          <div className="ml-2">
-            <Input
-              type="search"
-              placeholder="Search..."
-              icon="🔍"
-              className="w-64"
-            />
-          </div>
+          {/* Hide search bar on services pages */}
+          {!pathname.startsWith('/services') && (
+            <div className="ml-2">
+              <Input
+                type="search"
+                placeholder="Search..."
+                icon="🔍"
+                className="w-64"
+              />
+            </div>
+          )}
 
           {/* Hide Log In when on services page */}
           { !pathname.startsWith('/services') && (

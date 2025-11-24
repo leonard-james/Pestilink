@@ -102,13 +102,27 @@ export default function PreTipsPage() {
 
             <main className="relative z-10 flex-1 container mx-auto px-4 pt-28 pb-8">
                 <div className="max-w-3xl mx-auto text-center mb-6">
-                    <div className="relative max-w-2xl mx-auto mb-4">
+                    <form 
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const query = formData.get('search') as string;
+                            if (query?.trim()) {
+                                router.push(`/services/search?q=${encodeURIComponent(query)}`);
+                            }
+                        }}
+                        className="relative max-w-2xl mx-auto mb-4"
+                    >
                         <input
                             type="text"
+                            name="search"
                             placeholder="Type pest name or description..."
                             className="w-full px-4 py-3 pr-12 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder:text-white/60 border border-white/20"
                         />
-                        <button className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <button 
+                            type="submit"
+                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                        >
                             <svg
                                 className="w-6 h-6 text-white/60"
                                 fill="none"
@@ -123,7 +137,7 @@ export default function PreTipsPage() {
                                 />
                             </svg>
                         </button>
-                    </div>
+                    </form>
 
                     {/* Dropdown buttons */}
                     <div className="flex gap-4 justify-center mb-6">
