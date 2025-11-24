@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import Input from './Input';
 
 export default function Header() {
   const pathname = usePathname() || '/';
@@ -37,6 +36,19 @@ export default function Header() {
     }
   };
 
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('search') as string;
+    if (query?.trim()) {
+      router.push(`/services/search?q=${encodeURIComponent(query)}`);
+    }
+  };
+
   return (
     <header className="absolute top-0 left-0 right-0 z-20">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6">
@@ -65,14 +77,27 @@ export default function Header() {
 
           {/* Hide search bar on services pages */}
           {!pathname.startsWith('/services') && (
-            <div className="ml-2">
-              <Input
-                type="search"
-                placeholder="Search..."
-                icon="🔍"
-                className="w-64"
-              />
-            </div>
+            <form 
+              onSubmit={handleSearchSubmit}
+              className="ml-2"
+            >
+              <div className="relative w-64">
+                <input
+                  type="search"
+                  name="search"
+                  placeholder="Search..."
+                  className="w-full px-3 py-2 pr-10 rounded-lg bg-white/20 border-none text-white 
+                    placeholder:text-white/60 text-sm focus:outline-none focus:ring-2 
+                    focus:ring-emerald-400"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/80"
+                >
+                  🔍
+                </button>
+              </div>
+            </form>
           )}
 
           {/* Hide Log In when on services page */}
@@ -96,7 +121,9 @@ export default function Header() {
           <div className="relative z-10 max-w-sm w-full bg-white text-black rounded-lg p-5 shadow-lg">
             <h3 className="text-lg font-semibold mb-2">Please log in or sign up</h3>
             <p className="mb-4 text-sm text-gray-700">
-              You need an account to access Services. Create one or log in to continue.
+              {pathname.startsWith('/services') 
+                ? 'You need an account to access Services. Create one or log in to continue.'
+                : 'You need to sign up or log in to search for pests. Create an account or log in to continue.'}
             </p>
             <div className="flex gap-2 justify-end">
               <button

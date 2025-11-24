@@ -6,13 +6,37 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import Dropdown from '../../components/Dropdown';
 
+// Component to handle pest images with fallback
+function PestImage({ src, fallback, alt }: { src: string; fallback: string; alt: string }) {
+    const [imgSrc, setImgSrc] = useState(src);
+    
+    useEffect(() => {
+        setImgSrc(src);
+    }, [src]);
+
+    return (
+        <img
+            src={imgSrc}
+            alt={alt}
+            className="w-full h-full object-cover"
+            onError={() => {
+                if (imgSrc !== fallback) {
+                    setImgSrc(fallback);
+                }
+            }}
+        />
+    );
+}
+
 // Extended pest data with photos
+// Note: Add specific pest images to /public/pests/ folder with these filenames
 const pestsData = [
     {
         name: 'Ants',
         description: 'Small insects that form colonies and are attracted to food sources. Common types include carpenter ants, fire ants, and sugar ants. They can enter homes through tiny cracks and are often found near food sources.',
         image: '🐜',
-        photo: '/pest.webp', // Using existing pest image, you can add specific images later
+        photo: '/pests/ants.jpg', // Add ants.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Keep food sealed, clean up spills immediately, and seal entry points.',
         habitat: 'Kitchens, pantries, gardens, and areas with food debris',
     },
@@ -20,7 +44,8 @@ const pestsData = [
         name: 'Cockroaches',
         description: 'Nocturnal insects that thrive in warm, moist environments. They can carry diseases and contaminate food. Cockroaches are known for their resilience and ability to survive in various conditions.',
         image: '🪳',
-        photo: '/pest.webp',
+        photo: '/pests/cockroaches.jpg', // Add cockroaches.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Maintain cleanliness, fix leaks, and seal cracks and crevices.',
         habitat: 'Bathrooms, kitchens, basements, and areas with moisture',
     },
@@ -28,7 +53,8 @@ const pestsData = [
         name: 'Mosquitoes',
         description: 'Flying insects that breed in standing water. They can transmit diseases like dengue and malaria. Female mosquitoes bite to obtain blood for egg production.',
         image: '🦟',
-        photo: '/pest.webp',
+        photo: '/pests/mosquitoes.jpg', // Add mosquitoes.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Remove standing water, use screens on windows, and apply repellent.',
         habitat: 'Areas with standing water, gardens, and outdoor spaces',
     },
@@ -36,7 +62,8 @@ const pestsData = [
         name: 'Rats',
         description: 'Rodents that can cause property damage and spread diseases. They reproduce quickly and are active at night. Rats can chew through wires, insulation, and wood.',
         image: '🐀',
-        photo: '/pest.webp',
+        photo: '/pests/rats.jpg', // Add rats.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Seal entry points, store food properly, and maintain cleanliness.',
         habitat: 'Attics, basements, walls, and areas with food sources',
     },
@@ -44,7 +71,8 @@ const pestsData = [
         name: 'Termites',
         description: 'Wood-destroying insects that can cause significant structural damage. They work silently and are often undetected until damage is severe. Termites feed on cellulose found in wood.',
         image: '🐜',
-        photo: '/pest.webp',
+        photo: '/pests/termites.jpg', // Add termites.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Keep wood away from foundation, fix moisture problems, and schedule regular inspections.',
         habitat: 'Wooden structures, soil, and areas with moisture',
     },
@@ -52,7 +80,8 @@ const pestsData = [
         name: 'Flies',
         description: 'Common household pests that can contaminate food and spread bacteria. They are attracted to garbage and decaying matter. Flies can lay hundreds of eggs in a short time.',
         image: '🪰',
-        photo: '/pest.webp',
+        photo: '/pests/flies.jpg', // Add flies.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Keep garbage covered, clean regularly, and use screens on doors and windows.',
         habitat: 'Kitchens, garbage areas, and places with organic waste',
     },
@@ -60,7 +89,8 @@ const pestsData = [
         name: 'Bed Bugs',
         description: 'Small, blood-feeding insects that hide in mattresses and furniture. They cause itchy bites and are difficult to eliminate. Bed bugs are excellent hitchhikers and can spread quickly.',
         image: '🛏️',
-        photo: '/pest.webp',
+        photo: '/pests/bedbugs.jpg', // Add bedbugs.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Inspect second-hand furniture, use protective covers on mattresses, and vacuum regularly.',
         habitat: 'Mattresses, bed frames, furniture, and cracks in walls',
     },
@@ -68,7 +98,8 @@ const pestsData = [
         name: 'Spiders',
         description: 'Arachnids that can be beneficial by eating other pests, but some species are venomous and can be a nuisance. Most spiders are harmless to humans.',
         image: '🕷️',
-        photo: '/pest.webp',
+        photo: '/pests/spiders.jpg', // Add spiders.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Reduce clutter, seal entry points, and remove webs regularly.',
         habitat: 'Corners, basements, attics, and dark areas',
     },
@@ -76,7 +107,8 @@ const pestsData = [
         name: 'Mice',
         description: 'Small rodents that can enter through tiny openings. They contaminate food and can cause property damage. Mice reproduce rapidly and can establish large populations quickly.',
         image: '🐭',
-        photo: '/pest.webp',
+        photo: '/pests/mice.jpg', // Add mice.jpg to /public/pests/ folder
+        fallbackPhoto: '/pest.webp',
         prevention: 'Seal entry points, store food in airtight containers, and set traps if needed.',
         habitat: 'Walls, attics, kitchens, and areas with food sources',
     },
@@ -87,12 +119,14 @@ function SearchContent() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
         const query = searchParams.get('q') || '';
         setSearchQuery(query);
-        
+        // Only show results if there's a query parameter (user came from another page with search)
         if (query.trim()) {
+            setHasSearched(true);
             const filtered = pestsData.filter((pest) =>
                 pest.name.toLowerCase().includes(query.toLowerCase()) ||
                 pest.description.toLowerCase().includes(query.toLowerCase()) ||
@@ -100,14 +134,29 @@ function SearchContent() {
             );
             setSearchResults(filtered);
         } else {
+            setHasSearched(false);
             setSearchResults([]);
         }
     }, [searchParams]);
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/services/search?q=${encodeURIComponent(searchQuery)}`);
+        const formData = new FormData(e.currentTarget);
+        const query = formData.get('search') as string;
+        
+        if (query?.trim()) {
+            setSearchQuery(query);
+            setHasSearched(true);
+            // Update URL without navigation
+            router.push(`/services/search?q=${encodeURIComponent(query)}`, { scroll: false });
+            
+            // Perform search
+            const filtered = pestsData.filter((pest) =>
+                pest.name.toLowerCase().includes(query.toLowerCase()) ||
+                pest.description.toLowerCase().includes(query.toLowerCase()) ||
+                pest.habitat.toLowerCase().includes(query.toLowerCase())
+            );
+            setSearchResults(filtered);
         }
     };
 
@@ -132,6 +181,7 @@ function SearchContent() {
                     <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto mb-4">
                         <input
                             type="text"
+                            name="search"
                             placeholder="Type pest name or description..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -185,7 +235,7 @@ function SearchContent() {
                 </div>
 
                 <div className="max-w-6xl mx-auto">
-                    {searchQuery ? (
+                    {hasSearched && searchQuery ? (
                         <>
                             <h1 className="text-2xl font-bold text-white mb-6">
                                 Search Results for "{searchQuery}"
@@ -198,11 +248,10 @@ function SearchContent() {
                                             className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-emerald-800/40 transition-all"
                                         >
                                             <div className="relative h-48 w-full">
-                                                <Image
+                                                <PestImage
                                                     src={pest.photo}
+                                                    fallback={pest.fallbackPhoto}
                                                     alt={pest.name}
-                                                    fill
-                                                    className="object-cover"
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                                                 <div className="absolute bottom-4 left-4 right-4">
@@ -247,7 +296,7 @@ function SearchContent() {
                         <div className="text-center py-12">
                             <p className="text-white/60 text-lg mb-2">Enter a search query to find pests</p>
                             <p className="text-white/40 text-sm">
-                                Search by pest name, description, or habitat
+                                Type a pest name or description and press Enter or click the search button
                             </p>
                         </div>
                     )}
