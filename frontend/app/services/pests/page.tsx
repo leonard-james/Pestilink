@@ -6,40 +6,64 @@ import Footer from '../../components/Footer';
 import Dropdown from '../../components/Dropdown';
 import { useRouter } from 'next/navigation';
 
-const preventionTips = [
+const pests = [
     {
-        title: 'Eliminate Food Sources',
-        description: 'Keep kitchen clean, store food in airtight containers, and dispose of garbage properly.',
-        icon: '🍽️',
+        name: 'Ants',
+        description: 'Small insects that form colonies and are attracted to food sources. Common types include carpenter ants, fire ants, and sugar ants.',
+        image: '🐜',
+        prevention: 'Keep food sealed, clean up spills immediately, and seal entry points.',
     },
     {
-        title: 'Remove Standing Water',
-        description: 'Drain stagnant water from containers, gutters, and pet bowls to prevent mosquito breeding.',
-        icon: '💧',
+        name: 'Cockroaches',
+        description: 'Nocturnal insects that thrive in warm, moist environments. They can carry diseases and contaminate food.',
+        image: '🪳',
+        prevention: 'Maintain cleanliness, fix leaks, and seal cracks and crevices.',
     },
     {
-        title: 'Seal Entry Points',
-        description: 'Caulk cracks, seal gaps around pipes, and install door sweeps to block pest entry.',
-        icon: '🔒',
+        name: 'Mosquitoes',
+        description: 'Flying insects that breed in standing water. They can transmit diseases like dengue and malaria.',
+        image: '🦟',
+        prevention: 'Remove standing water, use screens on windows, and apply repellent.',
     },
     {
-        title: 'Maintain Cleanliness',
-        description: 'Vacuum regularly, wipe surfaces, and declutter to eliminate pest hiding spots.',
-        icon: '🧹',
+        name: 'Rats',
+        description: 'Rodents that can cause property damage and spread diseases. They reproduce quickly and are active at night.',
+        image: '🐀',
+        prevention: 'Seal entry points, store food properly, and maintain cleanliness.',
     },
     {
-        title: 'Trim Vegetation',
-        description: 'Cut back bushes and tree branches away from your home to reduce pest harborage.',
-        icon: '✂️',
+        name: 'Termites',
+        description: 'Wood-destroying insects that can cause significant structural damage. They work silently and are often undetected until damage is severe.',
+        image: '🐜',
+        prevention: 'Keep wood away from foundation, fix moisture problems, and schedule regular inspections.',
     },
     {
-        title: 'Store Firewood Properly',
-        description: 'Keep firewood stacks away from home and elevated off the ground.',
-        icon: '🪵',
+        name: 'Flies',
+        description: 'Common household pests that can contaminate food and spread bacteria. They are attracted to garbage and decaying matter.',
+        image: '🪰',
+        prevention: 'Keep garbage covered, clean regularly, and use screens on doors and windows.',
+    },
+    {
+        name: 'Bed Bugs',
+        description: 'Small, blood-feeding insects that hide in mattresses and furniture. They cause itchy bites and are difficult to eliminate.',
+        image: '🛏️',
+        prevention: 'Inspect second-hand furniture, use protective covers on mattresses, and vacuum regularly.',
+    },
+    {
+        name: 'Spiders',
+        description: 'Arachnids that can be beneficial by eating other pests, but some species are venomous and can be a nuisance.',
+        image: '🕷️',
+        prevention: 'Reduce clutter, seal entry points, and remove webs regularly.',
+    },
+    {
+        name: 'Mice',
+        description: 'Small rodents that can enter through tiny openings. They contaminate food and can cause property damage.',
+        image: '🐭',
+        prevention: 'Seal entry points, store food in airtight containers, and set traps if needed.',
     },
 ];
 
-export default function PreTipsPage() {
+export default function PestsPage() {
     const router = useRouter();
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -49,7 +73,6 @@ export default function PreTipsPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [showDescription, setShowDescription] = useState(false);
     const [filterType, setFilterType] = useState('');
-    const [filterLocation, setFilterLocation] = useState('');
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const handleImageUpload = async (file: File) => {
@@ -83,12 +106,10 @@ export default function PreTipsPage() {
 
     return (
         <div className="min-h-screen w-full bg-black text-white flex flex-col relative">
-            {/* Header (fixed) */}
             <div className="fixed inset-x-0 top-0 z-[9999] pointer-events-auto">
                 <Header />
             </div>
 
-            {/* Background image */}
             <Image
                 src="/farm pic.jpg"
                 alt="Farm background"
@@ -97,7 +118,6 @@ export default function PreTipsPage() {
                 priority
             />
 
-            {/* gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
 
             <main className="relative z-10 flex-1 container mx-auto px-4 pt-28 pb-8">
@@ -125,7 +145,6 @@ export default function PreTipsPage() {
                         </button>
                     </div>
 
-                    {/* Dropdown buttons */}
                     <div className="flex gap-4 justify-center mb-6">
                         <Dropdown
                             title="Identifying pests"
@@ -147,8 +166,6 @@ export default function PreTipsPage() {
                                     router.push('/services/professionals');
                                 } else if (val === 'Pest Prevention Tips') {
                                     router.push('/services/pretips');
-                                } else {
-                                    setFilterLocation(val);
                                 }
                             }}
                         />
@@ -156,7 +173,6 @@ export default function PreTipsPage() {
 
                     <div className="flex items-center justify-center gap-2 text-white/80 text-sm mb-8">
                         <span>Having trouble describing the pest? Try</span>
-
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             className="flex items-center gap-1 text-white hover:underline"
@@ -176,7 +192,6 @@ export default function PreTipsPage() {
                                 />
                             </svg>
                         </button>
-
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -187,7 +202,6 @@ export default function PreTipsPage() {
                                 if (file) handleImageUpload(file);
                             }}
                         />
-
                         <span className="text-xs opacity-60">
                             Powered by AI Pest Recognition
                         </span>
@@ -198,22 +212,27 @@ export default function PreTipsPage() {
                     )}
                 </div>
 
-                {/* Prevention Tips Grid */}
                 <div className="max-w-6xl mx-auto">
                     <h1 className="text-center text-3xl font-bold text-white mb-12">
-                        Pest Prevention Tips
+                        Common Pests
                     </h1>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {preventionTips.map((tip, index) => (
+                        {pests.map((pest, index) => (
                             <div
                                 key={index}
                                 className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl p-6 text-white hover:bg-emerald-800/40 transition-all"
                             >
-                                <div className="text-4xl mb-4">{tip.icon}</div>
-                                <h3 className="text-xl font-bold mb-3">{tip.title}</h3>
-                                <p className="text-white/80 text-sm leading-relaxed">
-                                    {tip.description}
+                                <div className="text-5xl mb-4 text-center">{pest.image}</div>
+                                <h3 className="text-xl font-bold mb-3 text-center">{pest.name}</h3>
+                                <p className="text-white/80 text-sm leading-relaxed mb-4">
+                                    {pest.description}
                                 </p>
+                                <div className="pt-4 border-t border-white/20">
+                                    <p className="text-xs text-white/70 font-semibold mb-1">
+                                        Prevention:
+                                    </p>
+                                    <p className="text-xs text-white/80">{pest.prevention}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -234,7 +253,11 @@ export default function PreTipsPage() {
                                 Pest Identified!
                             </h2>
                             <p className="text-white/90 mb-4">
-                                {prediction}
+                                {prediction ? (
+                                    <span className="text-lg font-medium">{prediction}</span>
+                                ) : (
+                                    <span className="text-sm">No clear identification</span>
+                                )}
                             </p>
 
                             {previewUrl && (
@@ -295,9 +318,11 @@ export default function PreTipsPage() {
                     </div>
                 </div>
             )}
+
             <div className="relative z-10">
                 <Footer />
             </div>
         </div>
     );
 }
+

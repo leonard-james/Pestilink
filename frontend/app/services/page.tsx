@@ -125,7 +125,13 @@ export default function ServicesPage() {
 						<Dropdown
 							title="Identifying pests"
 							options={['Pests', 'FAQ`s']}
-							onChange={setFilterType}
+							onChange={(val: string) => {
+								if (val === 'Pests') {
+									router.push('/services/pests');
+								} else if (val === 'FAQ`s') {
+									router.push('/services/faq');
+								}
+							}}
 						/>
 
 						<Dropdown
