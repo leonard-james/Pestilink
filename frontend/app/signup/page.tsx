@@ -1,9 +1,75 @@
+'use client';
+
 import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Input from '../components/Input';
+import { useAuth } from '../hooks/useAuth';
 
 export default function SignupPage() {
+  const router = useRouter();
+  const { register, isLoading, error, clearError } = useAuth();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
+  });
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+    setValidationError(null);
+    clearError();
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.name.trim()) {
+      setValidationError('Full name is required');
+      return;
+    }
+    if (!formData.email.trim()) {
+      setValidationError('Email is required');
+      return;
+    }
+    if (!formData.password) {
+      setValidationError('Password is required');
+      return;
+    }
+    if (formData.password.length < 8) {
+      setValidationError('Password must be at least 8 characters');
+      return;
+    }
+    if (formData.password !== formData.passwordConfirm) {
+      setValidationError('Passwords do not match');
+      return;
+    }
+
+    try {
+      await register(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.passwordConfirm
+      );
+      // Redirect to login on successful registration
+      router.push('/login');
+    } catch (err) {
+      // Error is already set in the hook
+      console.error('Registration error:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen relative">
       <div className="fixed inset-x-0 top-0 z-[9999] pointer-events-auto">
@@ -24,41 +90,62 @@ export default function SignupPage() {
         <div className="w-full max-w-sm p-6 rounded-2xl bg-emerald-800/30 backdrop-blur-sm">
           <h4 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">Sign up to continue</h4>
 
-          <form className="space-y-3">
+          {(error || validationError) && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded text-red-200 text-sm">
+              {error || validationError}
+            </div>
+          )}
+
+          <form className="space-y-3" onSubmit={handleSubmit}>
             <Input
               type="text"
+              name="name"
               placeholder="Full Name"
-            />
-            <Input
-              type="text"
-              placeholder="Username"
+              value={formData.name}
+              onChange={handleInputChange}
+              disabled={isLoading}
             />
             <Input
               type="email"
+              name="email"
               placeholder="Email"
-            />
-            <Input
-              type="tel"
-              placeholder="Contact Number"
-            />
-            <Input
-              type=""
-              placeholder="Address"
+              value={formData.email}
+              onChange={handleInputChange}
+              disabled={isLoading}
             />
             <Input
               type="password"
+              name="password"
               placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+              disabled={isLoading}
             />
             <Input
               type="password"
+              name="passwordConfirm"
               placeholder="Confirm Password"
+              value={formData.passwordConfirm}
+              onChange={handleInputChange}
+              disabled={isLoading}
             />
             <button 
               type="submit"
-              className="w-full bg-[#0b2036] text-white py-2 rounded-lg hover:bg-[#12293b] text-sm"
+              disabled={isLoading}
+              className="w-full bg-[#0b2036] text-white py-2 rounded-lg hover:bg-[#12293b] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition"
             >
-              SIGN UP
+              {isLoading ? 'SIGNING UP...' : 'SIGN UP'}
             </button>
+
+            <p className="text-center text-white/80 text-sm mt-4">
+              Already have an account?{' '}
+              <Link 
+                href="/login" 
+                className="text-white hover:underline font-medium"
+              >
+                Log In
+              </Link>
+            </p>
           </form>
         </div>
       </div>
