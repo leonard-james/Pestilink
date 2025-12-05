@@ -9,7 +9,7 @@ export default function HomePage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen w-full bg-black text-white">
+    <div className="min-h-screen flex flex-col bg-black text-white">
       <Header />
 
       {/* Hero Section */}
@@ -103,6 +103,11 @@ export default function HomePage() {
           </p>
         </div>
       </section>
+
+      {/* Footer */}
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }
