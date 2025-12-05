@@ -5,9 +5,10 @@ import { useState, useEffect, useRef } from 'react';
 
 type HeaderProps = {
   hideAuth?: boolean;
+  hideNav?: boolean;
 };
 
-export default function Header({ hideAuth = false }: HeaderProps) {
+export default function Header({ hideAuth = false, hideNav = false }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -75,35 +76,40 @@ export default function Header({ hideAuth = false }: HeaderProps) {
               {/* Add your navigation links here */}
             </div>
 
-            {/* Navigation Items - Right side - Only show on home page */}
-            {isHomePage && (
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => router.push('/home')}
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  type="button"
-                >
-                  Home
-                </button>
-                <button 
-                  onClick={() => router.push('/pest-services')}
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  type="button"
-                >
-                  Services
-                </button>
-                <button 
-                  onClick={() => router.push('/about')}
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  type="button"
-                >
-                  About Us
-                </button>
-                
-                {/* User Account */}
+            {/* Navigation Items - Right side */}
+            <div className="flex items-center">
+              {/* Show full navigation on home page */}
+              {isHomePage && !hideNav && (
+                <>
+                  <button 
+                    onClick={() => router.push('/home')}
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    type="button"
+                  >
+                    Home
+                  </button>
+                  <button 
+                    onClick={() => router.push('/pest-services')}
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    type="button"
+                  >
+                    Services
+                  </button>
+                  <button 
+                    onClick={() => router.push('/about')}
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    type="button"
+                  >
+                    About Us
+                  </button>
+                </>
+              )}
+              
+              {/* Always show account icon for admin (when hideNav is true) */}
+              {(isHomePage || hideNav) && (
                 <button 
                   onClick={toggleSidebar}
-                  className="h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors"
+                  className="h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors ml-2"
                   aria-label="Account settings"
                   aria-expanded={isSidebarOpen}
                   type="button"
@@ -112,8 +118,8 @@ export default function Header({ hideAuth = false }: HeaderProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </nav>
         </div>
       </header>

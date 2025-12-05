@@ -12,6 +12,7 @@ type TeamMember = {
   role: string;
   image: string;
   bio: string;
+  fallbackImage?: string;
 };
 
 type CoreValue = {
@@ -27,28 +28,32 @@ const teamMembers: TeamMember[] = [
     name: 'John Doe',
     role: 'CEO & Founder',
     image: '/team-1.jpg',
-    bio: '10+ years of experience in agricultural technology and pest management.'
+    bio: '10+ years of experience in agricultural technology and pest management.',
+    fallbackImage: `data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23374151%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2280%22%20fill%3D%22%236b7280%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3EJ%3C%2Ftext%3E%3C%2Fsvg%3E`
   },
   {
     id: 2,
     name: 'Jane Smith',
     role: 'Lead Entomologist',
     image: '/team-2.jpg',
-    bio: 'Expert in pest behavior and integrated pest management solutions.'
+    bio: 'Expert in pest behavior and integrated pest management solutions.',
+    fallbackImage: `data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23374151%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2280%22%20fill%3D%22%236b7280%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3EJ%3C%2Ftext%3E%3C%2Fsvg%3E`
   },
   {
     id: 3,
     name: 'Robert Johnson',
     role: 'Tech Lead',
     image: '/team-3.jpg',
-    bio: 'Specializes in developing cutting-edge pest detection algorithms.'
+    bio: 'Specializes in developing cutting-edge pest detection algorithms.',
+    fallbackImage: `data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23374151%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2280%22%20fill%3D%22%236b7280%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ER%3C%2Ftext%3E%3C%2Fsvg%3E`
   },
   {
     id: 4,
     name: 'Sarah Williams',
     role: 'Agricultural Specialist',
     image: '/team-4.jpg',
-    bio: 'Focuses on sustainable farming practices and crop protection.'
+    bio: 'Focuses on sustainable farming practices and crop protection.',
+    fallbackImage: `data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23374151%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2280%22%20fill%3D%22%236b7280%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ES%3C%2Ftext%3E%3C%2Fsvg%3E`
   }
 ];
 
@@ -218,10 +223,11 @@ export default function AboutPage() {
                     fill
                     className="object-cover"
                     onError={(e) => {
-                      // Fallback to a solid color if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23374151%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2280%22%20fill%3D%22%236b7280%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3E{member.name.charAt(0)}%3C%2Ftext%3E%3C%2Fsvg%3E';
+                      // The error handler is no longer needed as we're using fallback images
                     }}
+                    unoptimized={!!member.fallbackImage}
+                    placeholder="blur"
+                    blurDataURL={member.fallbackImage}
                   />
                 </div>
                 <div className="p-6">
