@@ -13,6 +13,7 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const isAdminPage = pathname.startsWith('/admin');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -52,6 +53,13 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
+
+  // Admin sidebar navigation items
+  const adminNavItems = [
+    { name: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', path: '/admin' },
+    { name: 'Manage Users', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', path: '/admin/users' },
+    { name: 'Manage Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', path: '/admin/products' },
+  ];
 
   // Show navigation and account icon on home and about pages
   const isHomePage = pathname === '/' || pathname === '/home' || pathname === '/about' || pathname === '/pest-services';
@@ -105,8 +113,8 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                 </>
               )}
               
-              {/* Always show account icon for admin (when hideNav is true) */}
-              {(isHomePage || hideNav) && (
+              {/* Show account icon based on props */}
+              {(isHomePage || hideNav) && !hideAuth && (
                 <button 
                   onClick={toggleSidebar}
                   className="h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors ml-2"
@@ -130,51 +138,58 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
         onClick={toggleSidebar}
       />
 
-      {/* Sidebar */}
-      <div 
-        ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full w-80 bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      >
-        <div className="p-6 h-full flex flex-col">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-white">Account</h2>
-          </div>
-
-          <div className="flex-1 flex flex-col">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
-                U
-              </div>
-              <div>
-                <p className="font-medium text-white">User Name</p>
-                <p className="text-sm text-gray-400">user@example.com</p>
-              </div>
+      {/* Admin Sidebar */}
+      {isAdminPage ? (
+        <div 
+          ref={sidebarRef}
+          className={`fixed top-0 right-0 h-full w-64 bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
+          <div className="p-6 h-full flex flex-col">
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-white">Admin Panel</h2>
             </div>
 
-            <nav className="space-y-2">
-              <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
-                <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                My Profile
-              </a>
-              <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
-                <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Settings
-              </a>
-              <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
-                <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Help & Support
-              </a>
+            <nav className="space-y-1">
+              {adminNavItems.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    router.push(item.path);
+                    setIsSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                    pathname === item.path 
+                      ? 'bg-gray-800 text-white' 
+                      : 'text-gray-300 hover:bg-gray-800'
+                  }`}
+                >
+                  <svg 
+                    className="h-5 w-5 mr-3" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d={item.icon} 
+                    />
+                  </svg>
+                  {item.name}
+                </button>
+              ))}
             </nav>
 
             <div className="mt-auto pt-4 border-t border-gray-800">
-              <button className="w-full flex items-center justify-between px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors">
+              <button 
+                onClick={() => {
+                  // Add sign out logic here
+                  router.push('/');
+                  setIsSidebarOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+              >
                 <span>Sign out</span>
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -183,7 +198,69 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* Regular User Sidebar */
+        <div 
+          ref={sidebarRef}
+          className={`fixed top-0 right-0 h-full w-80 bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
+          <div className="p-6 h-full flex flex-col">
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-white">Account</h2>
+            </div>
+
+            <div className="flex-1 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
+                  U
+                </div>
+                <div>
+                  <p className="font-medium text-white">User Name</p>
+                  <p className="text-sm text-gray-400">user@example.com</p>
+                </div>
+              </div>
+
+              <nav className="space-y-2">
+                <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
+                  <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  My Profile
+                </a>
+                <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
+                  <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Settings
+                </a>
+                <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
+                  <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Help & Support
+                </a>
+              </nav>
+
+              <div className="mt-auto pt-4 border-t border-gray-800">
+                <button 
+                  onClick={() => {
+                    // Add sign out logic here
+                    router.push('/');
+                    setIsSidebarOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <span>Sign out</span>
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

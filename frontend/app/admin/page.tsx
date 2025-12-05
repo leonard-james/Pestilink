@@ -4,10 +4,9 @@ import Image from "next/image";
 import Header from "../components/Header";
 
 export default function AdminDashboard() {
-
   return (
-    <div className="min-h-screen w-full bg-black text-white flex flex-col">
-      <Header hideAuth hideNav />
+    <div className="min-h-screen w-full bg-gray-900 text-white">
+      <Header hideNav />
       
       <main className="relative z-10 flex-1 mt-16">
         <div className="relative min-h-screen">
@@ -23,9 +22,9 @@ export default function AdminDashboard() {
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
 
-          {/* Content - Centered */}
-          <div className="absolute inset-0 mx-auto flex max-w-7xl items-center justify-center px-8">
-            <div className="w-full max-w-5xl">
+          {/* Content */}
+          <div className="absolute inset-0 w-full px-4">
+            <div className="w-full max-w-[1800px] mx-auto">
               {/* Title Box */}
               <div className="mb-10 text-center">
                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -137,7 +136,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Recent Activity */}
-              <div className="bg-gray-600/30 rounded-xl backdrop-blur-sm border border-gray-500/20 p-6">
+              <div className="bg-gray-600/30 rounded-xl backdrop-blur-sm border border-gray-500/20 p-6 hover:border-blue-400/50 transition-all duration-300">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold">Recent Activity</h2>
                   <button className="text-sm text-gray-400 hover:text-white transition-colors">
@@ -164,9 +163,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-
-          {/* Bottom vignette */}
-          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
         </div>
       </main>
     </div>

@@ -1,0 +1,578 @@
+"use client";
+
+import { useState } from 'react';
+import { FiUsers, FiUserPlus, FiSearch, FiFilter, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import Image from 'next/image';
+import Header from "../../components/Header";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: 'active' | 'inactive' | 'suspended';
+  lastLogin: string;
+  createdAt?: string;
+}
+
+export default function UserManagement() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'date-asc' | 'date-desc'>('name-asc');
+  const [filters, setFilters] = useState({
+    status: '' as '' | 'active' | 'inactive' | 'suspended',
+    lastLogin: '' as '' | 'today' | 'week' | 'month'
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [users, setUsers] = useState<User[]>([
+    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'active', lastLogin: '2023-11-15 14:30' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'active', lastLogin: '2023-11-14 09:15' },
+    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Manager', status: 'inactive', lastLogin: '2023-11-10 16:45' },
+    { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'User', status: 'suspended', lastLogin: '2023-11-05 11:20' },
+    { id: 5, name: 'Charlie Wilson', email: 'charlie@example.com', role: 'User', status: 'active', lastLogin: '2023-11-16 08:30' },
+  ]);
+  const usersPerPage = 5;
+
+
+  // Apply filters
+  let filteredUsers = users.filter(user => {
+    // Search filter
+    const matchesSearch = searchTerm === '' || 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Status filter
+    const matchesStatus = !filters.status || user.status === filters.status;
+    
+    // Alphabetical filter (removed)
+    
+    // Last login filter
+    const matchesLastLogin = (() => {
+      if (!filters.lastLogin) return true;
+      
+      const now = new Date();
+      const lastLogin = new Date(user.lastLogin);
+      const diffTime = now.getTime() - lastLogin.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      switch (filters.lastLogin) {
+        case 'today': return diffDays === 0;
+        case 'week': return diffDays <= 7;
+        case 'month': return diffDays <= 30;
+        default: return true;
+      }
+    })();
+    
+    return matchesSearch && matchesStatus && matchesLastLogin;
+  });
+
+  // Apply sorting
+  filteredUsers = [...filteredUsers].sort((a, b) => {
+    switch (sortBy) {
+      case 'name-asc':
+        return a.name.localeCompare(b.name);
+      case 'name-desc':
+        return b.name.localeCompare(a.name);
+      case 'date-asc':
+        return new Date(a.lastLogin).getTime() - new Date(b.lastLogin).getTime();
+      case 'date-desc':
+        return new Date(b.lastLogin).getTime() - new Date(a.lastLogin).getTime();
+      default:
+        return 0;
+    }
+  });
+
+  // Get current users
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+  const handleAddUser = () => {
+    setEditingUser({
+      id: 0, // 0 indicates a new user
+      name: '',
+      email: '',
+      role: 'User',
+      status: 'active',
+      lastLogin: new Date().toISOString()
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (userId: number) => {
+    const userToEdit = users.find(user => user.id === userId);
+    if (userToEdit) {
+      setEditingUser({ ...userToEdit });
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleDelete = (userId: number) => {
+    if (confirm('Are you sure you want to delete this user?')) {
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+      // In a real app, you would call an API here
+      console.log('Deleted user:', userId);
+    }
+  };
+
+  const handleStatusChange = (userId: number, newStatus: User['status']) => {
+    setUsers(prevUsers =>
+      prevUsers.map(user =>
+        user.id === userId ? { ...user, status: newStatus } : user
+      )
+    );
+    // In a real app, you would call an API here
+    console.log(`Updated status of user ${userId} to ${newStatus}`);
+  };
+
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const handleSaveUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    // Validate form
+    if (!editingUser.name.trim()) {
+      alert('Please enter a name');
+      return;
+    }
+
+    if (!editingUser.email.trim() || !validateEmail(editingUser.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    // Check for duplicate email (except for the current user being edited)
+    const emailExists = users.some(
+      user => user.email.toLowerCase() === editingUser.email.toLowerCase() && 
+             user.id !== editingUser.id
+    );
+
+    if (emailExists) {
+      alert('A user with this email already exists');
+      return;
+    }
+
+    if (editingUser.id === 0) {
+      // Add new user
+      const newUser = {
+        ...editingUser,
+        id: Math.max(0, ...users.map(u => u.id)) + 1, // Generate new ID
+        lastLogin: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      };
+      
+      setUsers(prevUsers => [...prevUsers, newUser]);
+      // In a real app, you would call an API here
+      console.log('Added new user:', newUser);
+      alert('User added successfully!');
+    } else {
+      // Update existing user
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.id === editingUser.id ? { 
+            ...user, 
+            ...editingUser,
+            // Preserve the original creation date
+            createdAt: user.createdAt || new Date().toISOString()
+          } : user
+        )
+      );
+      // In a real app, you would call an API here
+      console.log('Updated user:', editingUser);
+      alert('User updated successfully!');
+    }
+    
+    // Close modal and reset form
+    setIsModalOpen(false);
+    setEditingUser(null);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (!editingUser) return;
+    const { name, value, type } = e.target as HTMLInputElement;
+    
+    // Handle different input types
+    const newValue = type === 'number' ? Number(value) : value;
+    
+    setEditingUser({
+      ...editingUser,
+      [name]: newValue
+    });
+  };
+  
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({
+      ...prev,
+      [name]: value || ''
+    }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+  
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as any);
+    setCurrentPage(1); // Reset to first page when sort changes
+  };
+
+  return (
+    <div className="min-h-screen w-full bg-gray-900 text-white">
+      <Header hideAuth hideNav />
+      
+      <main className="relative z-10 flex-1 mt-16">
+        <div className="relative min-h-screen">
+          {/* Background image */}
+          <Image
+            src="/farm pic.jpg"
+            alt="Admin Dashboard Background"
+            fill
+            className="object-cover"
+            priority
+          />
+
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+
+          {/* Content */}
+          <div className="absolute inset-0 w-full px-4 py-8 overflow-auto">
+            <div className="w-full max-w-7xl mx-auto">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-bold flex items-center">
+                    <FiUsers className="mr-3" />
+                    User Management
+                  </h1>
+                  <p className="text-gray-400 mt-1">Manage your application users and permissions</p>
+                </div>
+                <button 
+                  onClick={handleAddUser}
+                  className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+                >
+                  <FiUserPlus className="mr-2" />
+                  Add New User
+                </button>
+              </div>
+
+              {/* Search and Filter */}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 mb-6 border border-gray-700/50">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* Search */}
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiSearch className="text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      className="bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+                      placeholder="Search users..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  
+                  <button 
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                      Object.values(filters).some(f => f) 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'text-gray-300 bg-gray-700/50 border border-gray-600/50 hover:bg-gray-600/50'
+                    }`}
+                  >
+                    <FiFilter className="mr-2" />
+                    {Object.values(filters).some(f => f) ? 'Filters Active' : 'Filter'}
+                  </button>
+                </div>
+                
+                {/* Filter Options - Shown in one line when filter button is clicked */}
+                {showFilters && (
+                  <div className="mt-4 pt-4 border-t border-gray-700/50">
+                    <div className="flex flex-col sm:flex-row gap-3 items-end">
+                      {/* Status Filter */}
+                      <div className="w-full sm:w-auto">
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
+                        <select
+                          name="status"
+                          value={filters.status}
+                          onChange={handleFilterChange}
+                          className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">All Statuses</option>
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                          <option value="suspended">Suspended</option>
+                        </select>
+                      </div>
+                      
+                      {/* Last Login Filter */}
+                      <div className="w-full sm:w-auto">
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Last Login</label>
+                        <select
+                          name="lastLogin"
+                          value={filters.lastLogin}
+                          onChange={handleFilterChange}
+                          className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">Any Time</option>
+                          <option value="today">Today</option>
+                          <option value="week">Last 7 Days</option>
+                          <option value="month">Last 30 Days</option>
+                        </select>
+                      </div>
+                      
+                      {/* Sort By */}
+                      <div className="w-full sm:w-auto">
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Sort By</label>
+                        <select
+                          value={sortBy}
+                          onChange={handleSortChange}
+                          className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="name-asc">Name (A-Z)</option>
+                          <option value="name-desc">Name (Z-A)</option>
+                          <option value="date-desc">Newest First</option>
+                        </select>
+                      </div>
+                      
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Users Table */}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/50">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left text-gray-300">
+                    <thead className="text-xs text-gray-300 uppercase bg-gray-700/50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3">Name</th>
+                        <th scope="col" className="px-6 py-3">Email</th>
+                        <th scope="col" className="px-6 py-3">Role</th>
+                        <th scope="col" className="px-6 py-3">Status</th>
+                        <th scope="col" className="px-6 py-3">Last Login</th>
+                        <th scope="col" className="px-6 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentUsers.length > 0 ? (
+                        currentUsers.map((user) => (
+                          <tr key={user.id} className="border-t border-gray-700/50 hover:bg-gray-700/20 transition-colors">
+                            <td className="px-6 py-4 font-medium whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold mr-3">
+                                  {user.name.charAt(0)}
+                                </div>
+                                {user.name}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">{user.email}</td>
+                            <td className="px-6 py-4">
+                              <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-900/50 text-blue-300">
+                                {user.role}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                                user.status === 'active' ? 'bg-green-900/50 text-green-300' :
+                                user.status === 'inactive' ? 'bg-yellow-900/50 text-yellow-300' :
+                                'bg-red-900/50 text-red-300'
+                              }`}>
+                                {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">{user.lastLogin}</td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex justify-end space-x-2">
+                                <button
+                                  onClick={() => handleEdit(user.id)}
+                                  className="p-1.5 text-gray-400 hover:text-blue-400 transition-colors"
+                                  title="Edit user"
+                                >
+                                  <FiEdit2 />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(user.id)}
+                                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                                  title="Delete user"
+                                >
+                                  <FiTrash2 />
+                                </button>
+                                <select
+                                  value={user.status}
+                                  onChange={(e) => handleStatusChange(user.id, e.target.value as User['status'])}
+                                  className="bg-gray-700/50 border border-gray-600/50 text-white text-xs rounded-lg px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                  <option value="active">Active</option>
+                                  <option value="inactive">Inactive</option>
+                                  <option value="suspended">Suspended</option>
+                                </select>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                            No users found matching your search criteria.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {filteredUsers.length > usersPerPage && (
+                  <div className="px-6 py-4 bg-gray-700/30 border-t border-gray-700/50 flex items-center justify-between">
+                    <div className="text-sm text-gray-400">
+                      Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{' '}
+                      <span className="font-medium">
+                        {Math.min(indexOfLastUser, filteredUsers.length)}
+                      </span>{' '}
+                      of <span className="font-medium">{filteredUsers.length}</span> users
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="p-1.5 rounded-md border border-gray-600/50 bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <FiChevronLeft />
+                      </button>
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        // Show first page, last page, and pages around current page
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return pageNum > 0 && pageNum <= totalPages ? (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-10 h-10 rounded-md flex items-center justify-center ${
+                              currentPage === pageNum
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        ) : null;
+                      })}
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="p-1.5 rounded-md border border-gray-600/50 bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <FiChevronRight />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* User Modal */}
+        {isModalOpen && editingUser && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl w-full max-w-md">
+              <div className="p-6">
+                <h2 className="text-xl font-bold mb-4">
+                  {editingUser.id === 0 ? 'Add New User' : 'Edit User'}
+                </h2>
+                <form onSubmit={handleSaveUser}>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={editingUser.name}
+                        onChange={handleInputChange}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={editingUser.email}
+                        onChange={handleInputChange}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Role</label>
+                      <select
+                        name="role"
+                        value={editingUser.role}
+                        onChange={handleInputChange}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                        required
+                      >
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
+                      <select
+                        name="status"
+                        value={editingUser.status}
+                        onChange={handleInputChange}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                        required
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setEditingUser(null);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                    >
+                      {editingUser.id === 0 ? 'Add User' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
