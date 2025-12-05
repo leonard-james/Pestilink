@@ -2,16 +2,16 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 export default function HomePage() {
   const router = useRouter();
 
-  const handleGetStarted = () => {
-    router.push('/pest-services');
-  };
-
   return (
     <div className="min-h-screen w-full bg-black text-white">
+      <Header />
+
       {/* Hero Section */}
       <section className="relative h-screen">
         <Image
@@ -32,24 +32,10 @@ export default function HomePage() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 Protect Your Crops with Precision
               </h1>
-              <p className="text-xl text-gray-200 mb-8">
+              <p className="text-xl text-gray-200">
                 Advanced pest detection and management solutions for modern farmers.
                 Get real-time insights and protect your harvest.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={handleGetStarted}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Get Started
-                </button>
-                <button
-                  onClick={() => router.push('/pest-services')}
-                  className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Explore Services
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -115,12 +101,6 @@ export default function HomePage() {
           <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
             Start using PestLink today and experience the future of pest management.
           </p>
-          <button
-            onClick={handleGetStarted}
-            className="bg-white text-emerald-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-medium transition-colors"
-          >
-            Get Started for Free
-          </button>
         </div>
       </section>
     </div>

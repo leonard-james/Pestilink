@@ -22,7 +22,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col">
-      <Header />
+      <Header hideAuth />
 
       {/* Hero */}
       <main className="relative z-10 flex-1">
