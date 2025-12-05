@@ -1,10 +1,56 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Input from '../components/Input';
+import { useAuth } from '../hooks/useAuth';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login, isLoading, error, clearError } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+    setValidationError(null);
+    clearError();
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.email.trim()) {
+      setValidationError('Email is required');
+      return;
+    }
+    if (!formData.password) {
+      setValidationError('Password is required');
+      return;
+    }
+
+    try {
+      await login(formData.email, formData.password);
+      // Redirect to pest-services on successful login
+      router.push('/pest-services');
+    } catch (err) {
+      // Error is already set in the hook
+      console.error('Login error:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen relative">
       <div className="fixed inset-x-0 top-0 z-[9999] pointer-events-auto">
@@ -25,17 +71,31 @@ export default function LoginPage() {
         <div className="w-full max-w-lg p-10 rounded-2xl bg-emerald-800/30 backdrop-blur-sm">
           <h4 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">Log in to continue</h4>
 
-          <form className="space-y-6">
+          {(error || validationError) && (
+            <div className="mb-6 p-3 bg-red-500/20 border border-red-500 rounded text-red-200 text-sm">
+              {error || validationError}
+            </div>
+          )}
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <Input
-              type="text"
-              placeholder="Username/Email"
+              type="email"
+              name="email"
+              placeholder="Email"
               className="text-lg"
+              value={formData.email}
+              onChange={handleInputChange}
+              disabled={isLoading}
             />
             <div className="space-y-3">
               <Input
                 type="password"
+                name="password"
                 placeholder="Password"
                 className="text-lg"
+                value={formData.password}
+                onChange={handleInputChange}
+                disabled={isLoading}
               />
               <Link 
                 href="/forgot-password" 
@@ -47,9 +107,10 @@ export default function LoginPage() {
             
             <button 
               type="submit"
-              className="w-full bg-[#0b2036] text-white py-4 rounded-lg hover:bg-[#12293b] text-base font-medium"
+              disabled={isLoading}
+              className="w-full bg-[#0b2036] text-white py-4 rounded-lg hover:bg-[#12293b] disabled:opacity-50 disabled:cursor-not-allowed text-base font-medium transition"
             >
-              LOG IN
+              {isLoading ? 'LOGGING IN...' : 'LOG IN'}
             </button>
 
             <p className="text-center text-white/80 text-base mt-6">
