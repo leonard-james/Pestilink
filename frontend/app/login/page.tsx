@@ -52,23 +52,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative">
-      <div className="fixed inset-x-0 top-0 z-[9999] pointer-events-auto">
+    <div className="min-h-screen flex flex-col">
+      {/* Background Image and Overlay */}
+      <div className="fixed inset-0 -z-10">
+        <Image
+          src="/farm pic.jpg"
+          alt="Farm background"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+      </div>
+
+      {/* Header */}
+      <div className="sticky top-0 z-50">
         <Header />
       </div>
 
-      <Image
-        src="/farm pic.jpg"
-        alt="Farm background"
-        fill
-        className="object-cover pointer-events-none"
-        priority
-      />
-
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
-
-      <div className="relative z-10 min-h-screen flex items-start justify-center px-4 pt-20 pb-10 pointer-events-auto">
-        <div className="w-full max-w-md p-8 rounded-2xl bg-emerald-800/30 backdrop-blur-sm">
+      {/* Main Content */}
+      <main className="flex-grow flex items-start justify-center px-4 pt-20 pb-10">
+        <div className="w-full max-w-md p-8 rounded-2xl bg-emerald-800/30 backdrop-blur-sm mt-10">
           <h4 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">Log in to continue</h4>
 
           {(error || validationError) && (
@@ -124,8 +128,12 @@ export default function LoginPage() {
             </p>
           </form>
         </div>
+      </main>
+
+      {/* Footer */}
+      <div className="mt-auto">
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 }
