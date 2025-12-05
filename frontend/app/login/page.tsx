@@ -43,8 +43,8 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-      // Redirect to pest-services on successful login
-      router.push('/pest-services');
+      // Redirect to home page on successful login
+      router.push('/home');
     } catch (err) {
       // Error is already set in the hook
       console.error('Login error:', err);
@@ -67,8 +67,8 @@ export default function LoginPage() {
 
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
 
-      <div className="relative z-10 min-h-screen flex items-start justify-center px-4 pt-20 pointer-events-auto">
-        <div className="w-full max-w-lg p-10 rounded-2xl bg-emerald-800/30 backdrop-blur-sm">
+      <div className="relative z-10 min-h-screen flex items-start justify-center px-4 pt-20 pb-10 pointer-events-auto">
+        <div className="w-full max-w-md p-8 rounded-2xl bg-emerald-800/30 backdrop-blur-sm">
           <h4 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">Log in to continue</h4>
 
           {(error || validationError) && (

@@ -86,9 +86,9 @@ export default function SignupPage() {
 
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
 
-      <div className="relative z-10 min-h-screen flex items-start justify-center px-4 pt-24 pointer-events-auto">
-        <div className="w-full max-w-sm p-6 rounded-2xl bg-emerald-800/30 backdrop-blur-sm">
-          <h4 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">Sign up to continue</h4>
+      <div className="relative z-10 min-h-screen flex items-start justify-center px-4 pt-20 pb-10 pointer-events-auto">
+        <div className="w-full max-w-md p-8 rounded-2xl bg-emerald-800/30 backdrop-blur-sm">
+          <h4 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">Sign up to continue</h4>
 
           {(error || validationError) && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded text-red-200 text-sm">
@@ -96,7 +96,7 @@ export default function SignupPage() {
             </div>
           )}
 
-          <form className="space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <Input
               type="text"
               name="name"

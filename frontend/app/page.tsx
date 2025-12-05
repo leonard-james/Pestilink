@@ -17,9 +17,7 @@ export default function Home() {
   }, []);
 
   const handleGetStarted = () => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-    }
+    router.push('/login');
   };
 
   return (
