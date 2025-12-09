@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -45,5 +46,37 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the company associated with the user (if role is company).
+     */
+    public function company()
+    {
+        return $this->hasOne(Company::class);
+    }
+
+    /**
+     * Check if user is a farmer.
+     */
+    public function isFarmer(): bool
+    {
+        return $this->role === 'farmer';
+    }
+
+    /**
+     * Check if user is a company.
+     */
+    public function isCompany(): bool
+    {
+        return $this->role === 'company';
+    }
+
+    /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

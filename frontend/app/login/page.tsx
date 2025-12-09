@@ -43,8 +43,17 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-      // Redirect to home page on successful login
-      router.push('/home');
+      // Redirect based on user role
+      const user = JSON.parse(localStorage.getItem('authUser') || '{}');
+      if (user.role === 'farmer') {
+        router.push('/dashboard/farmer');
+      } else if (user.role === 'company') {
+        router.push('/dashboard/company');
+      } else if (user.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/home');
+      }
     } catch (err) {
       // Error is already set in the hook
       console.error('Login error:', err);
@@ -53,6 +62,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <div className="sticky top-0 z-50">
+        <Header />
+      </div>
+
       {/* Background Image and Overlay */}
       <div className="fixed inset-0 -z-10">
         <Image
@@ -63,11 +77,6 @@ export default function LoginPage() {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
-      </div>
-
-      {/* Header */}
-      <div className="sticky top-0 z-50">
-        <Header />
       </div>
 
       {/* Main Content */}
@@ -112,7 +121,7 @@ export default function LoginPage() {
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#0b2036] text-white py-4 rounded-lg hover:bg-[#12293b] disabled:opacity-50 disabled:cursor-not-allowed text-base font-medium transition"
+              className="w-full bg-[#0b2036] text-white py-4 rounded-lg hover:bg-[#12293b] disabled:opacity-50 disabled:cursor-not-allowed text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
             >
               {isLoading ? 'LOGGING IN...' : 'LOG IN'}
             </button>
@@ -131,7 +140,7 @@ export default function LoginPage() {
       </main>
 
       {/* Footer */}
-      <div className="mt-auto">
+      <div className="mt-auto pt-8">
         <Footer />
       </div>
     </div>

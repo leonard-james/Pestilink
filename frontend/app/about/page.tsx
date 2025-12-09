@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import Header from '../components/Header';
+import DashboardSidebar from '../components/DashboardSidebar';
 import Footer from '../components/Footer';
 
 type TeamMember = {
@@ -87,10 +87,10 @@ const coreValues: CoreValue[] = [
 export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      <Header />
+      <DashboardSidebar />
 
       {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden">
+      <section className="relative h-screen overflow-hidden ml-20 peer-hover:ml-64 transition-all duration-300">
         <div className="absolute inset-0 w-full h-full">
           <Image
             src="/farm pic.jpg"

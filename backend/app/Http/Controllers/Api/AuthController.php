@@ -29,6 +29,11 @@ class AuthController extends Controller
             ]);
         }
 
+        // Load company relationship if user is a company
+        if ($user->role === 'company') {
+            $user->load('company');
+        }
+
         $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;
 
         return response()->json([
@@ -47,21 +52,50 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', 'string', 'in:farmer,company'], // Only farmer or company allowed
+            // Company-specific fields
+            'company_name' => ['required_if:role,company', 'string', 'max:255'],
+            'address' => ['required_if:role,company', 'string'],
+            'contact_number' => ['required_if:role,company', 'string'],
+            'logo_url' => ['nullable', 'string', 'url'], // Optional Cloudinary URL
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+        // Prevent admin registration
+        if (isset($validated['role']) && $validated['role'] === 'admin') {
+            throw ValidationException::withMessages([
+                'role' => ['Admin accounts cannot be created through registration.'],
+            ]);
+        }
 
-        $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;
+        // Use database transaction for ACID compliance
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'], // Will be automatically hashed by the 'hashed' cast in User model
+                'role' => $validated['role'] ?? 'farmer',
+            ]);
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+            // Create company record if role is company
+            if ($user->role === 'company') {
+                \App\Models\Company::create([
+                    'user_id' => $user->id,
+                    'company_name' => $validated['company_name'],
+                    'address' => $validated['address'] ?? null,
+                    'phone' => $validated['contact_number'] ?? null,
+                    'logo_url' => $validated['logo_url'] ?? null,
+                ]);
+                $user->load('company');
+            }
+
+            $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;
+
+            return response()->json([
+                'message' => 'User registered successfully',
+                'user' => $user,
+                'token' => $token,
+            ], 201);
+        });
     }
 
     /**

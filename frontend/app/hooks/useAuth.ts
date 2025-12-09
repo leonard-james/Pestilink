@@ -5,6 +5,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  role: string;
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
@@ -17,7 +18,7 @@ interface UseAuthReturn {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<void>;
+  register: (name: string, email: string, password: string, passwordConfirmation: string, role: 'farmer' | 'company', companyData?: { company_name: string; address: string; contact_number: string }) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -67,17 +68,26 @@ export const useAuth = (): UseAuthReturn => {
   );
 
   const register = useCallback(
-    async (name: string, email: string, password: string, passwordConfirmation: string) => {
+    async (name: string, email: string, password: string, passwordConfirmation: string, role: 'farmer' | 'company', companyData?: { company_name: string; address: string; contact_number: string }) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await api.register({
+        const registerData: any = {
           name,
           email,
           password,
           password_confirmation: passwordConfirmation,
-        });
+          role,
+        };
+
+        if (role === 'company' && companyData) {
+          registerData.company_name = companyData.company_name;
+          registerData.address = companyData.address;
+          registerData.contact_number = companyData.contact_number;
+        }
+
+        const response = await api.register(registerData);
 
         setToken(response.token);
         setUser(response.user);

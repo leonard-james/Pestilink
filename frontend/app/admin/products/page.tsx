@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { FiPackage, FiPlus, FiSearch, FiFilter, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Image from 'next/image';
-import Header from "../../components/Header";
+import DashboardSidebar from "../../components/DashboardSidebar";
 
 interface Product {
   id: number;
@@ -188,20 +188,19 @@ export default function ProductManagement() {
   const categories = [...new Set(products.map(p => p.category))];
 
   return (
-    <div 
-      className="min-h-screen text-white"
-      style={{
-        backgroundImage: "url('/farm pic.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        position: 'relative'
-      }}
-    >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-      <div className="relative z-10">
-        <Header hideAuth hideNav />
-        <main className="relative z-10 flex-1 mt-16">
+    <div className="min-h-screen w-full bg-gray-900 text-white flex">
+      <DashboardSidebar role="admin" />
+      <div 
+        className="flex-1 relative ml-20 peer-hover:ml-64 transition-all duration-300"
+        style={{
+          backgroundImage: "url('/farm pic.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <main className="relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
@@ -565,7 +564,8 @@ export default function ProductManagement() {
           </div>
         </div>
       )}
-    </div>
+        </main>
+      </div>
     </div>
   );
 }

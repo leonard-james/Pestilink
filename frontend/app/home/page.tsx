@@ -2,18 +2,45 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Header from "../components/Header";
+import { useEffect, useState } from "react";
+import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
 
 export default function HomePage() {
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
+    
+    if (token && userStr) {
+      setIsAuthenticated(true);
+      try {
+        const user = JSON.parse(userStr);
+        setUserRole(user.role);
+        
+        // Redirect authenticated users to their dashboard
+        if (user.role === 'farmer') {
+          router.push('/dashboard/farmer');
+        } else if (user.role === 'company') {
+          router.push('/dashboard/company');
+        } else if (user.role === 'admin') {
+          router.push('/admin');
+        }
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+  }, [router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-      <Header />
+      <DashboardSidebar />
 
       {/* Hero Section */}
-      <section className="relative h-screen">
+      <section className="relative min-h-screen flex flex-col ml-20 peer-hover:ml-64 transition-all duration-300">
         <Image
           src="/farm pic.jpg"
           alt="Farm field"
@@ -28,14 +55,27 @@ export default function HomePage() {
         {/* Hero Content */}
         <div className="relative h-full flex items-center">
           <div className="container mx-auto px-6">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+            <div className="max-w-3xl">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-white">
                 Protect Your Crops with Precision
               </h1>
-              <p className="text-xl text-gray-200">
-                Advanced pest detection and management solutions for modern farmers.
-                Get real-time insights and protect your harvest.
+              <p className="text-xl md:text-2xl text-gray-200 leading-relaxed">
+                Advanced pest detection and management solutions for modern farmers. Get real-time insights and protect your harvest.
               </p>
+              <div className="mt-8 flex gap-4">
+                <button
+                  onClick={() => router.push('/pest-services')}
+                  className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  Start Detection
+                </button>
+                <button
+                  onClick={() => router.push('/services')}
+                  className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg border border-white/20 transition-all duration-200"
+                >
+                  Browse Services
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -105,7 +145,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <div className="mt-auto">
+      <div className="mt-auto pt-8">
         <Footer />
       </div>
     </div>

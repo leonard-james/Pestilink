@@ -1,7 +1,7 @@
 ﻿'use client';
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import Header from '../../../components/Header';
+import DashboardSidebar from '../../../components/DashboardSidebar';
 import Footer from '../../../components/Footer';
 import Dropdown from '../../../components/Dropdown';
 import { useRouter } from 'next/navigation';
@@ -125,7 +125,7 @@ export default function PestsPage() {
     return (
         <div className="min-h-screen w-full bg-black text-white flex flex-col relative">
             <div className="fixed inset-x-0 top-0 z-50 pointer-events-auto">
-                <Header />
+                <DashboardSidebar />
             </div>
 
             <Image
@@ -138,7 +138,7 @@ export default function PestsPage() {
 
             <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
 
-            <main className="relative z-10 flex-1 container mx-auto px-4 pt-28 pb-8 flex flex-col items-center justify-center">
+            <main className="relative z-10 flex-1 ml-20 peer-hover:ml-64 transition-all duration-300 container mx-auto px-4 pt-8 pb-8 flex flex-col items-center justify-center">
                 <div className="mb-6 w-full max-w-2xl">
                     <button
                         onClick={() => router.back()}

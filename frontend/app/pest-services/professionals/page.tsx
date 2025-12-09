@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import Header from '../../components/Header';
+import DashboardSidebar from '../../components/DashboardSidebar';
 import Footer from '../../components/Footer';
 import Dropdown from '../../components/Dropdown';
 import { useRouter } from 'next/navigation';
@@ -84,7 +84,7 @@ export default function ServicesPage() {
     return (
         <div className="min-h-screen w-full bg-black text-white flex flex-col relative">
             <div className="fixed inset-x-0 top-0 z-[9999] pointer-events-auto">
-                <Header />
+                <DashboardSidebar />
             </div>
 
             <Image
@@ -97,7 +97,7 @@ export default function ServicesPage() {
 
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent pointer-events-none z-0"></div>
 
-            <main className="relative z-10 flex-1 container mx-auto px-4 pt-28 pb-8">
+            <main className="relative z-10 flex-1 ml-20 peer-hover:ml-64 transition-all duration-300 container mx-auto px-4 pt-8 pb-8">
                 <div className="max-w-3xl mx-auto text-center mb-6">
                     <form 
                         onSubmit={(e) => {

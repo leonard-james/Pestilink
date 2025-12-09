@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import Header from '../../../components/Header';
+import DashboardSidebar from '../../../components/DashboardSidebar';
 import Footer from '../../../components/Footer';
 import { pests } from '../data';
 
@@ -11,8 +11,8 @@ export default function PestDetail({ params }: { params: { slug: string } }) {
     if (!pest) {
         return (
             <div className="min-h-screen w-full bg-black text-white flex flex-col">
-                <Header />
-                <main className="container mx-auto py-24 text-center">
+                <DashboardSidebar />
+                <main className="container mx-auto py-8 text-center ml-20 peer-hover:ml-64 transition-all duration-300">
                     <h1 className="text-2xl font-semibold">Pest not found</h1>
                     <p className="mt-4">No data available for "{slug}".</p>
                     <Link href="/pest-services/pests" className="mt-6 inline-block text-emerald-300 hover:underline">
@@ -26,8 +26,8 @@ export default function PestDetail({ params }: { params: { slug: string } }) {
 
     return (
         <div className="min-h-screen w-full bg-black text-white flex flex-col">
-            <Header />
-            <main className="container mx-auto py-14 px-4">
+            <DashboardSidebar />
+            <main className="container mx-auto py-8 px-4 ml-20 peer-hover:ml-64 transition-all duration-300">
                 <div className="max-w-4xl mx-auto bg-emerald-900/10 p-8 rounded-xl flex flex-col md:flex-row items-start gap-6">
                     <div className="md:flex-1">
                         <h1 className="text-4xl font-bold mb-2">{pest.name}</h1>

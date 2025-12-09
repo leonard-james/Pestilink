@@ -1,6 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PestController;
+use App\Http\Controllers\Api\ServiceController;
+use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Middleware\EnsureUserIsFarmer;
+use App\Http\Middleware\EnsureUserIsCompany;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 // Public API routes (no authentication required)
@@ -9,6 +16,13 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
 });
 
+// Public service routes
+Route::get('/services', [ServiceController::class, 'index']);
+Route::get('/services/suggest', [ServiceController::class, 'suggest']);
+
+// Public pest classification route
+Route::post('/pest/classify', [PestController::class, 'classify']);
+
 // Protected API routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {
@@ -16,6 +30,31 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
     });
 
-    // Add your protected API routes here
-    // Route::get('/users', [UserController::class, 'index']);
+    //pest classification route
+    Route::post('/pest/classify', [PestController::class, 'classify']);
+
+
+    // Company service management routes
+    Route::prefix('company')->middleware(EnsureUserIsCompany::class)->group(function () {
+        Route::get('/services', [ServiceController::class, 'companyServices']);
+        Route::post('/services', [ServiceController::class, 'store']);
+        });
+
+    // Booking routes
+    Route::prefix('bookings')->group(function () {
+        Route::post('/', [BookingController::class, 'store'])->middleware(EnsureUserIsFarmer::class);
+        Route::get('/me', [BookingController::class, 'myBookings'])->middleware(EnsureUserIsFarmer::class);
+        Route::get('/company', [BookingController::class, 'companyBookings'])->middleware(EnsureUserIsCompany::class);
+        Route::get('/all', [BookingController::class, 'allBookings'])->middleware(EnsureUserIsAdmin::class);
+        // Status update allows company OR admin (handled in controller)
+        Route::patch('/{id}/status', [BookingController::class, 'updateStatus']);
+        Route::get('/{id}/audit', [BookingController::class, 'auditTrail'])->middleware(EnsureUserIsAdmin::class);
+    });
+
+    // Notification routes
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::patch('/read-all', [NotificationController::class, 'markAllAsRead']);
+    });
 });

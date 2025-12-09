@@ -61,7 +61,7 @@ export default function Home() {
               {/* Get Started Button */}
               <button
                 onClick={handleGetStarted}
-                className="px-8 py-3 bg-green-500 hover:bg-gray-600 text-white font-semibold rounded-full transition"
+                className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 Get Started →
               </button>

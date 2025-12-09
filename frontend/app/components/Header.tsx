@@ -12,8 +12,23 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isAdminPage = pathname.startsWith('/admin');
+  const isCompanyPage = pathname.startsWith('/dashboard/company');
+  const isFarmerPage = pathname.startsWith('/dashboard/farmer');
+
+  // Load user from localStorage
+  useEffect(() => {
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('authUser') : null;
+    if (userStr) {
+      try {
+        setUser(JSON.parse(userStr));
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -61,8 +76,15 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
     { name: 'Manage Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', path: '/admin/products' },
   ];
 
-  // Show navigation and account icon on home and about pages
-  const isHomePage = pathname === '/' || pathname === '/home' || pathname === '/about' || pathname === '/pest-services';
+  // Show navigation on main pages
+  const showNav = !hideNav && (
+    pathname === '/' || 
+    pathname === '/home' || 
+    pathname === '/about' || 
+    pathname === '/pest-services' || 
+    pathname.startsWith('/pest-services/') ||
+    pathname === '/services'
+  );
 
   return (
     <>
@@ -86,26 +108,40 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
 
             {/* Navigation Items - Right side */}
             <div className="flex items-center">
-              {/* Show full navigation on home page */}
-              {isHomePage && !hideNav && (
+              {/* Show full navigation on main pages */}
+              {showNav && (
                 <>
                   <button 
-                    onClick={() => router.push('/home')}
-                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    onClick={() => {
+                      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+                      if (token) {
+                        router.push('/home');
+                      } else {
+                        router.push('/');
+                      }
+                    }}
+                    className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
                     type="button"
                   >
                     Home
                   </button>
                   <button 
-                    onClick={() => router.push('/pest-services')}
-                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    onClick={() => router.push('/services')}
+                    className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
                     type="button"
                   >
                     Services
                   </button>
                   <button 
+                    onClick={() => router.push('/pest-services')}
+                    className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
+                    type="button"
+                  >
+                    Pest Classification
+                  </button>
+                  <button 
                     onClick={() => router.push('/about')}
-                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
                     type="button"
                   >
                     About Us
@@ -113,19 +149,29 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                 </>
               )}
               
-              {/* Show account icon based on props */}
-              {(isHomePage || hideNav) && !hideAuth && (
-                <button 
-                  onClick={toggleSidebar}
-                  className="h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors ml-2"
-                  aria-label="Account settings"
-                  aria-expanded={isSidebarOpen}
-                  type="button"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </button>
+              {/* Show account icon or login button */}
+              {!hideAuth && (
+                user ? (
+                  <button 
+                    onClick={toggleSidebar}
+                    className="h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center hover:bg-emerald-700 transition-colors ml-2"
+                    aria-label="Account settings"
+                    aria-expanded={isSidebarOpen}
+                    type="button"
+                  >
+                    <span className="text-white font-bold text-sm">
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => router.push('/login')}
+                    className="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ml-2"
+                    type="button"
+                  >
+                    Log In
+                  </button>
+                )
               )}
             </div>
           </nav>
@@ -199,7 +245,7 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
           </div>
         </div>
       ) : (
-        /* Regular User Sidebar */
+        /* User Sidebar */
         <div 
           ref={sidebarRef}
           className={`fixed top-0 right-0 h-full w-80 bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
@@ -210,53 +256,123 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
             </div>
 
             <div className="flex-1 flex flex-col">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
-                  U
-                </div>
-                <div>
-                  <p className="font-medium text-white">User Name</p>
-                  <p className="text-sm text-gray-400">user@example.com</p>
-                </div>
-              </div>
+              {user ? (
+                <>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">{user.name || 'User'}</p>
+                      <p className="text-sm text-gray-400">{user.email || ''}</p>
+                      {user.role && (
+                        <p className="text-xs text-emerald-400 capitalize">{user.role}</p>
+                      )}
+                    </div>
+                  </div>
 
-              <nav className="space-y-2">
-                <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
-                  <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  My Profile
-                </a>
-                <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
-                  <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Settings
-                </a>
-                <a href="#" className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
-                  <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Help & Support
-                </a>
-              </nav>
+                  <nav className="space-y-2">
+                    {user.role === 'farmer' && (
+                      <button 
+                        onClick={() => {
+                          router.push('/dashboard/farmer');
+                          setIsSidebarOpen(false);
+                        }}
+                        className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+                      >
+                        <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Dashboard
+                      </button>
+                    )}
+                    {user.role === 'company' && (
+                      <button 
+                        onClick={() => {
+                          router.push('/dashboard/company');
+                          setIsSidebarOpen(false);
+                        }}
+                        className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+                      >
+                        <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Company Dashboard
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => {
+                        router.push('/pest-services');
+                        setIsSidebarOpen(false);
+                      }}
+                      className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      Pest Classification
+                    </button>
+                    <button 
+                      onClick={() => {
+                        router.push('/services');
+                        setIsSidebarOpen(false);
+                      }}
+                      className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      Browse Services
+                    </button>
+                  </nav>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-white/80 mb-4">Not logged in</p>
+                  <button
+                    onClick={() => {
+                      router.push('/login');
+                      setIsSidebarOpen(false);
+                    }}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                  >
+                    Log In
+                  </button>
+                </div>
+              )}
 
-              <div className="mt-auto pt-4 border-t border-gray-800">
-                <button 
-                  onClick={() => {
-                    // Add sign out logic here
-                    router.push('/');
-                    setIsSidebarOpen(false);
-                  }}
-                  className="w-full flex items-center justify-between px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
-                >
-                  <span>Sign out</span>
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
-              </div>
+              {user && (
+                <div className="mt-auto pt-4 border-t border-gray-800">
+                  <button 
+                    onClick={async () => {
+                      const token = localStorage.getItem('authToken');
+                      if (token) {
+                        try {
+                          await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/logout`, {
+                            method: 'POST',
+                            headers: {
+                              'Authorization': `Bearer ${token}`,
+                            },
+                          });
+                        } catch (e) {
+                          console.error('Logout error:', e);
+                        }
+                      }
+                      localStorage.removeItem('authToken');
+                      localStorage.removeItem('authUser');
+                      setUser(null);
+                      router.push('/');
+                      setIsSidebarOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <span>Sign out</span>
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

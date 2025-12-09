@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import Header from '../components/Header';
+import DashboardSidebar from '../components/DashboardSidebar';
 import Footer from '../components/Footer';
 import Input from '../components/Input';
 
@@ -77,13 +77,10 @@ export default function ForgotPassword() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
       </div>
 
-      {/* Header */}
-      <div className="sticky top-0 z-50">
-        <Header hideNav />
-      </div>
+      <DashboardSidebar />
 
       {/* Main Content */}
-      <main className="flex-grow flex items-start justify-center px-4 pt-20 pb-10">
+      <main className="flex-grow flex items-start justify-center px-4 pt-8 pb-10 ml-20 peer-hover:ml-64 transition-all duration-300">
         <div className="w-full max-w-md p-8 rounded-2xl bg-emerald-800/30 backdrop-blur-sm mt-10">
           <h4 className="text-3xl md:text-4xl font-bold text-white text-center mb-2">
             Reset Your Password

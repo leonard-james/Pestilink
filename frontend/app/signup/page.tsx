@@ -12,11 +12,15 @@ import { useAuth } from '../hooks/useAuth';
 export default function SignupPage() {
   const router = useRouter();
   const { register, isLoading, error, clearError } = useAuth();
+  const [selectedRole, setSelectedRole] = useState<'farmer' | 'company' | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     passwordConfirm: '',
+    company_name: '',
+    address: '',
+    contact_number: '',
   });
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -55,12 +59,38 @@ export default function SignupPage() {
       return;
     }
 
+    if (!selectedRole) {
+      setValidationError('Please select an account type');
+      return;
+    }
+
+    if (selectedRole === 'company') {
+      if (!formData.company_name.trim()) {
+        setValidationError('Company name is required');
+        return;
+      }
+      if (!formData.address.trim()) {
+        setValidationError('Address is required');
+        return;
+      }
+      if (!formData.contact_number.trim()) {
+        setValidationError('Contact number is required');
+        return;
+      }
+    }
+
     try {
       await register(
         formData.name,
         formData.email,
         formData.password,
-        formData.passwordConfirm
+        formData.passwordConfirm,
+        selectedRole,
+        selectedRole === 'company' ? {
+          company_name: formData.company_name,
+          address: formData.address,
+          contact_number: formData.contact_number,
+        } : undefined
       );
       // Redirect to login on successful registration
       router.push('/login');
@@ -100,62 +130,133 @@ export default function SignupPage() {
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <Input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={handleInputChange}
-              disabled={isLoading}
-            />
-            <Input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleInputChange}
-              disabled={isLoading}
-            />
-            <Input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleInputChange}
-              disabled={isLoading}
-            />
-            <Input
-              type="password"
-              name="passwordConfirm"
-              placeholder="Confirm Password"
-              value={formData.passwordConfirm}
-              onChange={handleInputChange}
-              disabled={isLoading}
-            />
-            <button 
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#0b2036] text-white py-2 rounded-lg hover:bg-[#12293b] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition"
-            >
-              {isLoading ? 'SIGNING UP...' : 'SIGN UP'}
-            </button>
-
-            <p className="text-center text-white/80 text-sm mt-4">
-              Already have an account?{' '}
-              <Link 
-                href="/login" 
-                className="text-white hover:underline font-medium"
+          {!selectedRole ? (
+            <div className="space-y-4">
+              <p className="text-white/80 text-center mb-6">Select your account type:</p>
+              <button
+                onClick={() => setSelectedRole('farmer')}
+                className="w-full bg-[#0b2036] text-white py-4 rounded-lg hover:bg-[#12293b] text-base font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
-                Log In
-              </Link>
-            </p>
-          </form>
+                Farmer
+              </button>
+              <button
+                onClick={() => setSelectedRole('company')}
+                className="w-full bg-[#0b2036] text-white py-4 rounded-lg hover:bg-[#12293b] text-base font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                Company
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-white/80">Signing up as: <span className="font-semibold capitalize text-white">{selectedRole}</span></p>
+                <button
+                  onClick={() => {
+                    setSelectedRole(null);
+                    setFormData({
+                      name: '',
+                      email: '',
+                      password: '',
+                      passwordConfirm: '',
+                      company_name: '',
+                      address: '',
+                      contact_number: '',
+                    });
+                    clearError();
+                    setValidationError(null);
+                  }}
+                  className="text-white/60 hover:text-white text-sm"
+                >
+                  Change
+                </button>
+              </div>
+
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                <Input
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                />
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                />
+                {selectedRole === 'company' && (
+                  <>
+                    <Input
+                      type="text"
+                      name="company_name"
+                      placeholder="Company Name *"
+                      value={formData.company_name}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                    />
+                    <Input
+                      type="text"
+                      name="address"
+                      placeholder="Address *"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                    />
+                    <Input
+                      type="text"
+                      name="contact_number"
+                      placeholder="Contact Number *"
+                      value={formData.contact_number}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                    />
+                  </>
+                )}
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                />
+                <Input
+                  type="password"
+                  name="passwordConfirm"
+                  placeholder="Confirm Password"
+                  value={formData.passwordConfirm}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                />
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-[#0b2036] text-white py-3 rounded-lg hover:bg-[#12293b] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                >
+                  {isLoading ? 'SIGNING UP...' : 'SIGN UP'}
+                </button>
+
+                <p className="text-center text-white/80 text-sm mt-4">
+                  Already have an account?{' '}
+                  <Link 
+                    href="/login" 
+                    className="text-white hover:underline font-medium"
+                  >
+                    Log In
+                  </Link>
+                </p>
+              </form>
+            </>
+          )}
         </div>
       </main>
 
       {/* Footer */}
-      <div className="mt-auto">
+      <div className="mt-auto pt-8">
         <Footer />
       </div>
     </div>

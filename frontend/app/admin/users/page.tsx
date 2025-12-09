@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { FiUsers, FiUserPlus, FiSearch, FiFilter, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Image from 'next/image';
-import Header from "../../components/Header";
+import DashboardSidebar from "../../components/DashboardSidebar";
 
 interface User {
   id: number;
@@ -223,10 +223,10 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-900 text-white">
-      <Header hideAuth hideNav />
+    <div className="min-h-screen w-full bg-gray-900 text-white flex">
+      <DashboardSidebar role="admin" />
       
-      <main className="relative z-10 flex-1 mt-16">
+      <main className="relative z-10 flex-1 ml-20 peer-hover:ml-64 transition-all duration-300">
         <div className="relative min-h-screen">
           {/* Background image */}
           <Image

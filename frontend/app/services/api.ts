@@ -1,5 +1,7 @@
 // API client configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+// Ensure API URL doesn't have double /api
+const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = apiBase.endsWith('/api') ? apiBase : `${apiBase}/api`;
 
 interface LoginCredentials {
   email: string;
@@ -11,6 +13,10 @@ interface RegisterCredentials {
   email: string;
   password: string;
   password_confirmation: string;
+  role: 'farmer' | 'company';
+  company_name?: string;
+  address?: string;
+  contact_number?: string;
 }
 
 interface AuthResponse {
@@ -19,6 +25,7 @@ interface AuthResponse {
     id: number;
     name: string;
     email: string;
+    role?: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -33,16 +40,43 @@ export const api = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(credentials),
     });
 
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+
+    // Read response text once
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.errors?.email?.[0] || error.message || 'Login failed');
+      let errorMessage = 'Login failed';
+      
+      if (isJson) {
+        try {
+          const error = JSON.parse(responseText);
+          errorMessage = error.errors?.email?.[0] || error.message || 'Login failed';
+        } catch (e) {
+          errorMessage = `Login failed: ${response.status} ${response.statusText}`;
+        }
+      } else {
+        errorMessage = `Login failed: Server returned HTML instead of JSON (Status: ${response.status}). Make sure the backend server is running at ${API_BASE_URL}`;
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    if (!isJson) {
+      throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}. This usually means the backend server is not running or the API endpoint is incorrect.`);
+    }
+
+    try {
+      return JSON.parse(responseText);
+    } catch (jsonError) {
+      throw new Error('Failed to parse JSON response from server');
+    }
   },
 
   // Register user
@@ -51,21 +85,47 @@ export const api = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(credentials),
     });
 
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+
+    // Read response text once
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(
-        error.errors?.email?.[0] || 
-        error.errors?.password?.[0] || 
-        error.message || 
-        'Registration failed'
-      );
+      let errorMessage = 'Registration failed';
+      
+      if (isJson) {
+        try {
+          const error = JSON.parse(responseText);
+          errorMessage = error.errors?.email?.[0] || 
+            error.errors?.password?.[0] || 
+            error.errors?.name?.[0] ||
+            error.message || 
+            'Registration failed';
+        } catch (e) {
+          errorMessage = `Registration failed: ${response.status} ${response.statusText}`;
+        }
+      } else {
+        errorMessage = `Registration failed: Server returned HTML instead of JSON (Status: ${response.status}). Make sure the backend server is running at ${API_BASE_URL}`;
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    if (!isJson) {
+      throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}. This usually means the backend server is not running or the API endpoint is incorrect.`);
+    }
+
+    try {
+      return JSON.parse(responseText);
+    } catch (jsonError) {
+      throw new Error('Failed to parse JSON response from server');
+    }
   },
 
   // Logout user
@@ -74,6 +134,7 @@ export const api = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
     });
@@ -91,6 +152,7 @@ export const api = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
     });
