@@ -1,0 +1,404 @@
+You are now responsible for refining and improving our existing Pest Management Web System. 
+Do NOT create new features that do not exist unless explicitly stated. 
+Your job is to improve, connect, polish, and refine what is already implemented.
+
+========================================================
+🌾 SYSTEM PURPOSE (Do NOT Change)
+========================================================
+The system helps farmers identify pests manually by:
+- Browsing pests using the samples already stored in the system
+- Viewing pest descriptions, biology, signs, prevention, treatment, and DIY remedies
+- Viewing company services related to that pest
+- Booking a service
+
+NO AI is used. NO image upload for identification. 
+Identification is based ONLY on the sample images and information already provided in the system.
+
+========================================================
+🌾 WHAT CURRENTLY EXISTS (IMPORTANT — DO NOT REMOVE)
+========================================================
+1. User types:
+   - Company users
+   - Farmers / Regular users
+   - Admin
+
+2. Existing working pages:
+   - Dashboard(s)
+   - Pest browsing page
+   - Pest detail page (basic)
+   - Company post creation page
+   - Company dashboard
+   - Booking system (basic)
+   - Admin approval system (basic)
+   - Navigation buttons and page routes (some connected, some not)
+
+3. Existing system components:
+   - Sample pest images
+   - Static pest data (you must integrate the long pest information provided earlier)
+   - Existing service creation form
+   - Existing UI layout and components
+   - Routing structure (Next.js)
+
+Your task is to IMPROVE all of this — not replace it.
+
+========================================================
+🌾 NEW LOGIC TO IMPLEMENT (USING EXISTING PAGES)
+========================================================
+
+### 1. SERVICE–TO–PEST LINKING SYSTEM
+Improve the existing company service post creation page by adding:
+
+- A dropdown list OR searchable multi-select
+- This allows companies to tag which pests their service covers
+- The system must save this relation in the database
+
+### 2. AUTO-DISPLAY SERVICES ON PEST PAGES
+When a company tags a pest in their service post:
+
+- The service should automatically appear on that pest’s page
+- Farmers will see all companies that offer help for that specific pest
+
+NO new pages should be created for this — only improve the existing pest detail page.
+
+### 3. PEST INFORMATION INTEGRATION
+Integrate the COMPLETE pest information dataset (31 pests) into the existing pest detail feature:
+
+- Pest Name
+- Description
+- Biology
+- Signs of Infestation
+- Prevention
+- Treatment
+- DIY / Home Remedies
+- Sample Pest Images (already exist in the system)
+- List of Services for that Pest
+
+This data must be structured cleanly and displayed properly.
+
+### 4. UI/UX IMPROVEMENTS (IMPROVE EXISTING UI ONLY)
+Improve the design of all screens WITHOUT changing the logic:
+
+- Ensure consistent layout, spacing, and font hierarchy
+- Improve card designs for pests and services
+- Improve navigation bar & header/footer
+- Ensure responsive design (mobile + desktop)
+- Standardize button design across the whole system
+
+### 5. FIX ALL BUTTONS AND ROUTES
+Go through the entire codebase and:
+
+- Identify buttons that do nothing
+- Identify pages that are not connected
+- Identify links that are broken or dead
+
+Fix or implement the missing functionality BUT ONLY based on existing design intent.
+
+For example:
+If there is a “View Services” button but the route does not work:
+→ Connect it properly to the correct page.
+
+If there is a “Book Now” button:
+→ Ensure it routes to the booking form.
+
+### 6. BOOKING WORKFLOW IMPROVEMENT
+Improve the existing booking system:
+
+- When a user books a service, notify the admin (use existing notification logic)
+- Admin should be able to approve or decline
+- User sees the booking status updates
+
+Do not replace — just improve.
+
+========================================================
+🌾 SYSTEM CONSTRAINTS (VERY IMPORTANT)
+========================================================
+❌ No new AI, classification, or detection features  
+❌ No image upload feature for pest identification  
+❌ Do NOT delete existing pages  
+❌ Do NOT replace the system flow  
+❌ Do NOT generate entirely new architecture
+
+✔ Only improve and refine what exists  
+✔ Add the missing connection between services and pests  
+✔ Integrate the complete pest data provided  
+✔ Polish UI, routing, and button logic  
+✔ Make the system intuitive and professional
+
+========================================================
+🌾 EXPECTED OUTPUT FROM CURSOR
+========================================================
+Cursor must:
+
+1. Improve the existing service creation page and add pest multi-select.
+2. Modify database schema (only if necessary) to support service-to-pest mapping.
+3. Improve pest detail page to show:
+   - full pest info dataset
+   - sample images
+   - services linked to that pest
+4. Improve UI layout across all pages.
+5. Connect all broken buttons and routes.
+6. Ensure dashboards work for:
+   - Company
+   - Farmer
+   - Admin
+7. Ensure booking workflow works end-to-end.
+8. Clean and organize code where needed.
+9. Preserve the entire flow of the system.
+
+Start making improvements immediately. No summaries. No explanations. Only code changes and modifications.
+
+
+
+American Cockroach
+Description: Large reddish-brown cockroach, about 1.5–2 inches long, with a yellowish figure-8 pattern on the pronotum, commonly found in warm, damp areas such as basements, kitchens, and sewers.
+Biology: Nocturnal and omnivorous scavenger, capable of surviving up to a year, reproduces continuously with females laying multiple egg cases.
+Signs of Infestation: Presence of droppings, shed skins, egg cases, strong musty odor, and sightings during nighttime.
+Prevention: Seal cracks and crevices, reduce moisture, keep food sealed, maintain cleanliness, and remove clutter.
+Treatment: Use bait traps, insecticidal sprays, and professional pest control services for severe infestations.
+DIY/Home Remedy: Mix boric acid with sugar and sprinkle along baseboards and corners, or use diatomaceous earth to dehydrate and kill cockroaches.
+
+2. German Cockroach
+Description: Small, light brown cockroach with two dark parallel stripes on the pronotum, measuring 0.5–0.6 inches; prefers kitchens and bathrooms.
+Biology: Highly reproductive; females carry egg cases with up to 40 eggs each; thrive in warm, humid conditions.
+Signs of Infestation: Fecal spots, egg cases, greasy smear marks, and unpleasant odor.
+Prevention: Maintain proper sanitation, seal entry points, remove clutter, and keep food stored properly.
+Treatment: Gel baits, insect growth regulators, and insecticidal sprays are effective.
+DIY/Home Remedy: Place cotton balls soaked in peppermint oil in infested areas or mix baking soda with sugar to poison them.
+
+3. Rice Bug
+Description: Small, dark-colored insect that attacks developing rice grains, piercing them and sucking sap, reducing yield and grain quality.
+Biology: Both nymphs and adults feed on grains; populations increase in dense rice fields.
+Signs of Infestation: Empty or shriveled grains, discolored panicles, and reduced grain weight.
+Prevention: Field sanitation, crop rotation, timely harvesting, and removal of weeds.
+Treatment: Selective insecticide sprays and manual removal in small fields.
+DIY/Home Remedy: Spray a solution of neem oil and water on rice plants to repel adults.
+
+4. Rice Gall
+Description: Abnormal swollen growths on rice stems caused by gall-forming insects such as rice gall midge.
+Biology: Larvae feed inside young stems, stunting growth and reducing panicle development; multiple generations per season.
+Signs of Infestation: Swollen stems, stunted plants, and empty panicles.
+Prevention: Use resistant varieties, proper spacing, and avoid excessive nitrogen fertilization.
+Treatment: Early insecticide application targeting larvae.
+DIY/Home Remedy: Flood fields to disrupt larval development and manually remove infested seedlings.
+
+5. Rice Leaf Folder
+Description: Small moth whose larvae fold and feed inside rice leaves, reducing photosynthesis and weakening plants.
+Biology: Larvae roll leaves and feed internally; multiple generations per season.
+Signs of Infestation: Folded leaves with yellowish patches, leaf drying, and visible larvae inside folded leaves.
+Prevention: Remove crop residues, maintain water management, plant resistant varieties, and encourage natural predators.
+Treatment: Biological control with parasitoids, selective insecticides if infestation is severe.
+DIY/Home Remedy: Spray a mixture of neem oil and water or garlic extract on leaves to deter larvae.
+
+6. Rice Water Weevil
+Description: Small, dark beetle; adults feed on leaves while larvae feed on rice roots, causing stunted growth.
+Biology: Adults live above water, while larvae develop underwater feeding on roots; multiple generations in warm conditions.
+Signs of Infestation: Reduced tillering, stunted plants, yellowing, and damaged roots.
+Prevention: Flooding practices, crop rotation, resistant varieties, and removing weeds from fields.
+Treatment: Insecticidal seed treatments, foliar sprays targeting adults.
+DIY/Home Remedy: Apply neem cake around roots or maintain proper water levels to reduce larval survival.
+
+7. Rice Weevil
+Description: Small beetle (2–3 mm) with elongated snout; attacks stored rice grains causing internal damage.
+Biology: Larvae develop inside grains; adults can live for months and reproduce rapidly in stored grains.
+Signs of Infestation: Holes in grains, powdery frass in storage containers, and unpleasant odor.
+Prevention: Dry and store grains properly in airtight containers, inspect storage regularly.
+Treatment: Fumigation, diatomaceous earth, insecticide treatment of storage areas.
+DIY/Home Remedy: Place bay leaves or dried chili in rice containers to repel weevils naturally.
+
+8. Yellow Stem Borer
+Description: Moth larvae that bore into rice stems, causing dead hearts and whitehead panicles.
+Biology: Larvae tunnel inside stems; multiple generations per season; adults are nocturnal.
+Signs of Infestation: Dead hearts in young plants, whiteheads in mature panicles, stunted growth.
+Prevention: Field sanitation, proper planting time, resistant varieties, and removing infested plants.
+Treatment: Apply larvicidal insecticides, use light traps for adults.
+DIY/Home Remedy: Collect and destroy infested stems manually; apply neem oil spray on young plants.
+
+9. Stripe Rice Stem Borer
+Description: Similar to yellow stem borer but with striped larvae; attacks rice stems, weakening plants.
+Biology: Larvae feed inside stems, multiple generations per year; adults are small nocturnal moths.
+Signs of Infestation: Deadheart, whitehead, yellowing, and reduced yield.
+Prevention: Proper field sanitation, resistant varieties, and timely planting.
+Treatment: Use insecticides targeting larvae and pheromone traps for adults.
+DIY/Home Remedy: Remove and burn affected stems; spray garlic or neem solution to repel moths.
+
+10. Brown Leaf Hopper
+Description: Small wedge-shaped brown insect feeding on rice leaves and stems, vector of rice viruses.
+Biology: Sucks plant sap; populations increase in dense planting; vectors for grassy stunt and ragged stunt viruses.
+Signs of Infestation: Yellowing, curling leaves, hopperburn, stunted growth.
+Prevention: Proper spacing, weed removal, avoid excessive nitrogen, and resistant varieties.
+Treatment: Insecticide sprays, introduce natural predators like spiders or ladybugs.
+DIY/Home Remedy: Spray water mixed with neem oil or chili extract to repel hoppers.
+
+11. Brown Plant Hopper
+Description: Small brown insect closely related to leaf hoppers; attacks rice stems and leaves.
+Biology: Sucks sap and vectors viruses; multiple generations per season; thrives in high humidity.
+Signs of Infestation: Hopperburn, yellowing, stunted plants, reduced tillering.
+Prevention: Field sanitation, balanced fertilization, resistant varieties, and remove weeds.
+Treatment: Insecticides, encourage natural predators.
+DIY/Home Remedy: Spray garlic extract or neem oil on infested areas to repel hoppers.
+
+12. Mango Leaf Hopper
+Description: Small green or yellow insects feeding on mango leaf sap, secreting honeydew that promotes sooty mold.
+Biology: Rapid reproduction; nymphs feed on young leaves and shoots; prefer warm climates.
+Signs of Infestation: Curling and drying leaves, black sooty mold, reduced flowering.
+Prevention: Prune infested branches, avoid excessive nitrogen, maintain tree health.
+Treatment: Insecticidal sprays, neem oil, encourage predators like lacewings.
+DIY/Home Remedy: Spray water mixed with soap or garlic extract to remove and repel hoppers.
+
+13. Colorado Potato Beetle
+Description: Oval beetle with yellow-orange body and black stripes; feeds on potato leaves.
+Biology: Larvae are reddish with black spots; multiple generations per season; adults feed on foliage and reproduce rapidly.
+Signs of Infestation: Skeletonized leaves, visible larvae, reduced plant vigor.
+Prevention: Crop rotation, remove plant debris, use resistant varieties.
+Treatment: Handpicking, insecticidal sprays, biological control with predatory beetles.
+DIY/Home Remedy: Spray a mixture of neem oil or garlic extract on leaves; handpick beetles and larvae.
+
+14. Red Flour Beetle
+Description: Small reddish-brown beetle infesting stored grains and flour.
+Biology: Both larvae and adults feed on grains; can survive months without food; reproduce rapidly in stored grains.
+Signs of Infestation: Contaminated flour, larvae and beetles in storage, off-odor.
+Prevention: Properly seal and store grains; keep storage areas dry.
+Treatment: Fumigation, cleaning, discard heavily infested products.
+DIY/Home Remedy: Place bay leaves, dried chili, or cloves in containers to repel beetles.
+
+15. Armyworm
+Description: Caterpillar that attacks cereal crops, grass, and vegetables; green or brown with stripes.
+Biology: Larvae feed in groups, multiple generations per year, voracious leaf feeders.
+Signs of Infestation: Defoliated crops, ragged leaves, reduced yield.
+Prevention: Early monitoring, field sanitation, crop rotation.
+Treatment: Biological control (parasitoids), insecticidal sprays if outbreak occurs.
+DIY/Home Remedy: Spray neem oil solution or handpick caterpillars at night.
+
+16. Corn Root Worm
+Description: Small beetle; larvae feed on corn roots causing lodging and reduced nutrient uptake.
+Biology: Adults feed on leaves and pollen; larvae damage roots; multiple generations per year.
+Signs of Infestation: Stunted plants, lodged stalks, reduced yield.
+Prevention: Crop rotation, resistant varieties, soil management.
+Treatment: Soil-applied insecticides, foliar sprays for adults.
+DIY/Home Remedy: Plant trap crops like beans around corn or apply neem-based soil treatment.
+
+17. Diamondback Moth
+Description: Small grayish moth whose larvae feed on cabbage and cruciferous crops.
+Biology: Larvae feed on leaf surfaces, reproduce rapidly; multiple generations per season.
+Signs of Infestation: Holes in leaves, leaf skeletonization, visible larvae on undersides.
+Prevention: Remove crop residues, intercropping, use nets.
+Treatment: Biological control (Bacillus thuringiensis), insecticidal sprays.
+DIY/Home Remedy: Spray garlic extract or neem oil on leaves to repel larvae.
+
+18. Tomato Fruit Borer
+Description: Moth larvae bore into tomato fruits causing direct internal damage.
+Biology: Larvae develop inside fruits; multiple generations per season.
+Signs of Infestation: Rotten fruits, boreholes, frass inside fruit.
+Prevention: Remove infested fruits, crop rotation, cover fruit with paper or nets.
+Treatment: Insecticidal sprays, pheromone traps, biological control.
+DIY/Home Remedy: Use neem oil spray and handpick infested fruits early.
+
+19. Carpenter Ant
+Description: Large black or red ants that hollow wood for nesting.
+Biology: Feed on sweets and proteins; colony can contain thousands of ants; create structural damage over time.
+Signs of Infestation: Sawdust-like frass, hollow wood, visible trails.
+Prevention: Remove rotting wood, seal cracks, maintain wooden structures.
+Treatment: Baits, insecticidal dusts, professional pest control.
+DIY/Home Remedy: Sprinkle borax mixed with sugar along trails; vinegar spray can repel ants.
+
+20. Fire Ant
+Description: Small reddish-brown ants with painful sting; build large outdoor mounds.
+Biology: Aggressive omnivorous colony; queen lays eggs; workers defend mound.
+Signs of Infestation: Visible mounds, painful stings, allergic reactions in humans.
+Prevention: Avoid moving soil, maintain lawns, remove food sources.
+Treatment: Fire ant baits, mound treatments with insecticide.
+DIY/Home Remedy: Pour boiling water over mounds or sprinkle diatomaceous earth to kill ants.
+
+21. House Fly
+Description: Common fly, gray with four dark stripes on thorax; breeds in decaying matter.
+Biology: Life cycle 7–10 days; vectors for pathogens causing food contamination.
+Signs of Infestation: Flies buzzing indoors, fecal spots, contaminated food.
+Prevention: Proper sanitation, cover food, remove trash, use window screens.
+Treatment: Fly traps, insecticides.
+DIY/Home Remedy: Homemade trap using sugar water or apple cider vinegar in a jar.
+
+22. Silverleaf Whitefly
+Description: Tiny white flying insect; feeds on plant sap of vegetables and ornamentals.
+Biology: Multiple generations per year; secretes honeydew promoting sooty mold.
+Signs of Infestation: Yellowing leaves, stunted growth, black sooty mold.
+Prevention: Reflective mulches, avoid dense planting, encourage natural predators.
+Treatment: Insecticidal soaps, neem oil, biological control.
+DIY/Home Remedy: Spray water mixed with dish soap or garlic extract on leaves.
+
+23. Bed Bug
+Description: Small reddish-brown, flattened insect feeding on human blood at night.
+Biology: Hide in cracks, reproduce rapidly; lifespan up to a year.
+Signs of Infestation: Bite marks, blood spots on sheets, fecal spots, musty odor.
+Prevention: Inspect luggage and furniture, reduce clutter, encase mattresses.
+Treatment: Heat treatment, insecticidal sprays, professional pest control.
+DIY/Home Remedy: Vacuum mattresses, apply diatomaceous earth around bed frames.
+
+24. Tea Mosquito Bug
+Description: Small brown bug feeding on tea shoots and buds, causing black spots and malformed leaves.
+Biology: Rapid population growth in warm seasons; multiple generations per year.
+Signs of Infestation: Black spots, curling and drying of leaves, reduced yield.
+Prevention: Prune infested shoots, maintain field sanitation, avoid excess nitrogen.
+Treatment: Insecticidal sprays, neem oil, encourage natural predators.
+DIY/Home Remedy: Spray water mixed with garlic or chili extract to repel bugs.
+
+25. Apple Snail
+Description: Large freshwater snail with spiral shell; feeds on aquatic plants and rice seedlings.
+Biology: Lays bright pink eggs above water; larvae and adults feed voraciously on crops.
+Signs of Infestation: Damaged seedlings, snail shells, missing young plants.
+Prevention: Water management, remove egg clusters, maintain drainage.
+Treatment: Handpicking, molluscicides, traps.
+DIY/Home Remedy: Sprinkle salt around seedlings or crush egg clusters manually.
+
+26. Garden Snail
+Description: Terrestrial snail with coiled shell; nocturnal feeder on vegetables and plants.
+Biology: Lays eggs in soil; prefers moist conditions; feeds at night.
+Signs of Infestation: Irregular leaf holes, slime trails, damaged seedlings.
+Prevention: Remove debris, low moisture, physical barriers.
+Treatment: Handpicking, molluscicides, traps.
+DIY/Home Remedy: Use crushed eggshells or coffee grounds around plants as barrier.
+
+27. Aphid
+Description: Small soft-bodied insects, green, yellow, or black; feed on plant sap.
+Biology: Reproduce rapidly; excrete honeydew attracting sooty mold; vectors for plant viruses.
+Signs of Infestation: Curling, yellowing leaves, honeydew, sooty mold.
+Prevention: Encourage predators (ladybugs, lacewings), remove infested shoots.
+Treatment: Insecticidal soaps, neem oil, systemic insecticides.
+DIY/Home Remedy: Spray a mixture of water and dish soap or garlic solution on infested plants.
+
+28. Coconut Rhinoceros Beetle
+Description: Large beetle with horn on male; damages coconut and oil palms.
+Biology: Adults bore into palm crowns; larvae develop in decomposing organic matter; multiple generations per year.
+Signs of Infestation: Holes in crowns, broken fronds, reduced nut production.
+Prevention: Remove breeding sites, maintain clean plantations.
+Treatment: Traps, biological control with entomopathogenic fungi, insecticides.
+DIY/Home Remedy: Place traps with fermented coconut water or fruit to attract and remove adults.
+
+29. Mosquito
+Description: Small flying insect; female feeds on blood; vector for dengue, malaria, and other diseases.
+Biology: Lay eggs in stagnant water; complete life cycle in 1–2 weeks; multiple generations per year.
+Signs of Infestation: Bites, presence of larvae in water, nuisance outdoors.
+Prevention: Remove standing water, use screens and nets, wear protective clothing.
+Treatment: Larvicides, adult insecticides, mosquito repellents.
+DIY/Home Remedy: Use a mixture of citronella oil or vinegar in water as a mosquito repellent.
+
+30. Termite
+Description: Small pale insects that feed on wood and cellulose; colonies contain workers, soldiers, and a queen.
+Biology: Cause structural damage over time; thrive in moist wood; reproduce continuously.
+Signs of Infestation: Mud tubes, hollow wood, discarded wings, damaged structures.
+Prevention: Remove wood-soil contact, treat wooden structures, reduce moisture.
+Treatment: Termiticide application, baits, professional pest control.
+DIY/Home Remedy: Apply borax solution to wooden structures; keep wood dry and ventilated.
+
+31. Stripe Rice Stem Borer
+Description: Small moth larvae with striped bodies that bore into rice stems, causing dead hearts and whiteheads.
+Biology: Multiple generations per year; larvae develop inside stems; adults nocturnal.
+Signs of Infestation: Deadheart, whitehead, yellowing, stunted growth, reduced yield.
+Prevention: Field sanitation, proper planting time, resistant varieties, remove infested plants.
+Treatment: Insecticides targeting larvae; pheromone traps for adults.
+DIY/Home Remedy: Collect and destroy infested stems manually; apply neem or garlic extract spray on crops.
+
+
+this is the information of each pest and also
+
+in the main folder which is pestilink and inside the front end in the public we added the eimages you will use each file folder of the images has the name of what pest it  is you can read it  the folder that contains the images is named mga pesti sa pinas
+
