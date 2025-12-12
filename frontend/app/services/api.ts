@@ -2,6 +2,22 @@
 // Ensure API URL doesn't have double /api
 const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const API_BASE_URL = apiBase.endsWith('/api') ? apiBase : `${apiBase}/api`;
+const REQUEST_TIMEOUT_MS = 10000; // fail fast to avoid long hangs
+
+async function fetchWithTimeout(resource: RequestInfo | URL, options: RequestInit = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(resource, { ...options, signal: controller.signal });
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your internet connection or backend availability.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(id);
+  }
+}
 
 interface LoginCredentials {
   email: string;
@@ -36,7 +52,7 @@ interface AuthResponse {
 export const api = {
   // Login user
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,7 +97,7 @@ export const api = {
 
   // Register user
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -130,7 +146,7 @@ export const api = {
 
   // Logout user
   async logout(token: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/logout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -148,7 +164,7 @@ export const api = {
 
   // Get user profile
   async getProfile(token: string) {
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/profile`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

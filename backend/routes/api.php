@@ -38,6 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('company')->middleware(EnsureUserIsCompany::class)->group(function () {
         Route::get('/services', [ServiceController::class, 'companyServices']);
         Route::post('/services', [ServiceController::class, 'store']);
+        Route::put('/services/{id}', [ServiceController::class, 'update']);
+        Route::patch('/services/{id}', [ServiceController::class, 'update']);
+        Route::delete('/services/{id}', [ServiceController::class, 'destroy']);
         });
 
     // Booking routes

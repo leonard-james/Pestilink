@@ -16,6 +16,7 @@ interface Service {
   phone: string;
   email: string;
   image: string | null;
+  pest_types?: string[];
 }
 
 export default function ServicesPage() {
@@ -128,12 +129,35 @@ export default function ServicesPage() {
                         <span className="opacity-90 font-semibold">₱{service.price.toLocaleString()}</span>
                       </div>
                     )}
+                    {service.pest_types && service.pest_types.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {service.pest_types.slice(0, 4).map((pest) => (
+                          <span
+                            key={pest}
+                            className="text-xs bg-emerald-900/40 text-emerald-200 px-2 py-1 rounded-full border border-emerald-500/30"
+                          >
+                            {pest}
+                          </span>
+                        ))}
+                        {service.pest_types.length > 4 && (
+                          <span className="text-xs text-white/60">+{service.pest_types.length - 4} more</span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <button
-                    className="w-full bg-[#0b2036] text-white py-2.5 rounded-lg hover:bg-[#12293b] text-center font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    onClick={() => {
+                      // Open email client or show contact info
+                      if (service.email) {
+                        window.location.href = `mailto:${service.email}?subject=Inquiry about ${service.title}`;
+                      } else if (service.phone) {
+                        window.location.href = `tel:${service.phone}`;
+                      }
+                    }}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-center font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
-                    CONTACT NOW
+                    {service.email ? 'CONTACT NOW' : service.phone ? 'CALL NOW' : 'VIEW DETAILS'}
                   </button>
                 </div>
               ))}

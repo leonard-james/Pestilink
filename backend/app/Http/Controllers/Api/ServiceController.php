@@ -27,6 +27,7 @@ class ServiceController extends Controller
                     'title' => $service->title,
                     'description' => $service->description,
                     'price' => $service->price,
+                    'pest_types' => $service->pest_types ?? [],
                     'company_name' => $service->company->company_name ?? 'Unknown',
                     'location' => $service->company->location ?? '',
                     'phone' => $service->company->phone ?? '',
@@ -49,29 +50,38 @@ class ServiceController extends Controller
 
         $pestName = strtolower(trim($request->input('pest')));
 
-        // Find services that target this pest
-        $serviceIds = PestService::where('pest_name', 'like', "%{$pestName}%")
+        // Find services explicitly linked via pest_services pivot
+        $serviceIdsFromPivot = PestService::whereRaw('LOWER(pest_name) LIKE ?', ["%{$pestName}%"])
             ->pluck('service_id')
             ->toArray();
 
-        // Also find services with pest types matching
-        $additionalServices = Service::where('is_active', true)
-            ->whereJsonContains('pest_types', $pestName)
+        // Fetch active services once to avoid duplicate queries
+        $activeServices = Service::where('is_active', true)
+            ->with('company')
+            ->get();
+
+        // Also include services whose JSON pest_types mention this pest (case-insensitive)
+        $serviceIdsFromTags = $activeServices
+            ->filter(function ($service) use ($pestName) {
+                $pests = collect($service->pest_types ?? []);
+                return $pests->contains(function ($pest) use ($pestName) {
+                    return str_contains(strtolower($pest), $pestName);
+                });
+            })
             ->pluck('id')
             ->toArray();
 
-        $allServiceIds = array_unique(array_merge($serviceIds, $additionalServices));
+        $allServiceIds = array_unique(array_merge($serviceIdsFromPivot, $serviceIdsFromTags));
 
-        $services = Service::whereIn('id', $allServiceIds)
-            ->where('is_active', true)
-            ->with('company')
-            ->get()
+        $services = $activeServices
+            ->filter(fn ($service) => in_array($service->id, $allServiceIds))
             ->map(function ($service) {
                 return [
                     'id' => $service->id,
                     'title' => $service->title,
                     'description' => $service->description,
                     'price' => $service->price,
+                    'pest_types' => $service->pest_types ?? [],
                     'company_name' => $service->company->company_name ?? 'Unknown',
                     'location' => $service->company->location ?? '',
                     'phone' => $service->company->phone ?? '',
@@ -151,14 +161,11 @@ class ServiceController extends Controller
             'description' => ['required', 'string'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'service_type' => ['nullable', 'string'],
-            'pest_types' => ['nullable', 'string'],
+            'pest_types' => ['nullable'],
             'image' => ['nullable', 'image', 'max:5120'], // Max 5MB
         ]);
 
-        $pestTypes = [];
-        if (!empty($validated['pest_types'])) {
-            $pestTypes = array_map('trim', explode(',', $validated['pest_types']));
-        }
+        $pestTypes = $this->parsePestTypes($validated['pest_types'] ?? []);
 
         $service = Service::create([
             'company_id' => $company->id,
@@ -177,16 +184,164 @@ class ServiceController extends Controller
         }
 
         // Create pest service mappings
-        foreach ($pestTypes as $pestName) {
-            PestService::create([
-                'pest_name' => strtolower(trim($pestName)),
-                'service_id' => $service->id,
-            ]);
-        }
+        $this->storePestMappings($service, $pestTypes);
 
         return response()->json([
             'message' => 'Service created successfully',
             'service' => $service,
         ], 201);
+    }
+
+    /**
+     * Update a service (authenticated company user).
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user->isCompany()) {
+            return response()->json([
+                'error' => 'Unauthorized. Company access required.',
+            ], 403);
+        }
+
+        $company = $user->company;
+        
+        if (!$company) {
+            return response()->json([
+                'error' => 'Company profile not found',
+            ], 404);
+        }
+
+        $service = Service::where('id', $id)
+            ->where('company_id', $company->id)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['sometimes', 'required', 'string'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'service_type' => ['nullable', 'string'],
+            'pest_types' => ['nullable'],
+            'image' => ['nullable', 'image', 'max:5120'],
+            'is_active' => ['sometimes', 'boolean'],
+        ]);
+
+        $pestTypes = isset($validated['pest_types'])
+            ? $this->parsePestTypes($validated['pest_types'])
+            : null;
+
+        // Update service fields
+        $updateData = [];
+        if (isset($validated['title'])) $updateData['title'] = $validated['title'];
+        if (isset($validated['description'])) $updateData['description'] = $validated['description'];
+        if (isset($validated['price'])) $updateData['price'] = $validated['price'];
+        if (isset($validated['service_type'])) $updateData['service_type'] = $validated['service_type'];
+        if (isset($validated['is_active'])) $updateData['is_active'] = $validated['is_active'];
+        if (is_array($pestTypes)) {
+            $updateData['pest_types'] = $pestTypes;
+        }
+
+        $service->update($updateData);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
+            }
+            $imagePath = $request->file('image')->store('services', 'public');
+            $service->update(['image' => $imagePath]);
+        }
+
+        // Update pest service mappings if pest_types was provided
+        if (is_array($pestTypes)) {
+            $this->storePestMappings($service, $pestTypes);
+        }
+
+        return response()->json([
+            'message' => 'Service updated successfully',
+            'service' => $service->fresh(),
+        ], 200);
+    }
+
+    /**
+     * Delete a service (authenticated company user).
+     */
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user->isCompany()) {
+            return response()->json([
+                'error' => 'Unauthorized. Company access required.',
+            ], 403);
+        }
+
+        $company = $user->company;
+        
+        if (!$company) {
+            return response()->json([
+                'error' => 'Company profile not found',
+            ], 404);
+        }
+
+        $service = Service::where('id', $id)
+            ->where('company_id', $company->id)
+            ->firstOrFail();
+
+        // Delete associated image
+        if ($service->image) {
+            Storage::disk('public')->delete($service->image);
+        }
+
+        // Delete pest service mappings (cascade should handle this, but being explicit)
+        PestService::where('service_id', $service->id)->delete();
+
+        $service->delete();
+
+        return response()->json([
+            'message' => 'Service deleted successfully',
+        ], 200);
+    }
+
+    /**
+     * Normalize pest types input from array or comma-separated string.
+     */
+    private function parsePestTypes($raw): array
+    {
+        if (is_array($raw)) {
+            $pests = $raw;
+        } elseif (is_string($raw)) {
+            $pests = explode(',', $raw);
+        } else {
+            $pests = [];
+        }
+
+        $cleaned = array_filter(array_map(function ($item) {
+            if (!is_string($item)) {
+                return null;
+            }
+            $normalized = preg_replace('/\s+/', ' ', trim($item));
+            return $normalized !== '' ? $normalized : null;
+        }, $pests));
+
+        return array_values($cleaned);
+    }
+
+    /**
+     * Persist pest mappings in pivot table for a service.
+     */
+    private function storePestMappings(Service $service, array $pestTypes): void
+    {
+        // Always reset mappings to reflect the latest selection
+        PestService::where('service_id', $service->id)->delete();
+
+        foreach ($pestTypes as $pestName) {
+            PestService::create([
+                'pest_name' => strtolower($pestName),
+                'service_id' => $service->id,
+            ]);
+        }
     }
 }

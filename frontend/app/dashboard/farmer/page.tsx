@@ -19,15 +19,31 @@ interface Service {
   image: string | null;
 }
 
+interface Booking {
+  id: number;
+  status: string;
+  booking_notes?: string | null;
+  created_at?: string;
+  service?: {
+    title?: string;
+  };
+  company?: {
+    company_name?: string;
+  };
+}
+
 export default function FarmerDashboard() {
   const router = useRouter();
   const { user } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [recentDetections, setRecentDetections] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
 
   useEffect(() => {
     fetchServices();
+    fetchBookings();
     // Load recent pest detections from localStorage if available
     const stored = localStorage.getItem('recentPestDetections');
     if (stored) {
@@ -56,6 +72,26 @@ export default function FarmerDashboard() {
       console.error('Error fetching services:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBookings = async () => {
+    try {
+      setLoadingBookings(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/bookings/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data.bookings || []);
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    } finally {
+      setLoadingBookings(false);
     }
   };
 
@@ -134,7 +170,7 @@ export default function FarmerDashboard() {
             <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <button
-                onClick={() => router.push('/pest-services')}
+                onClick={() => router.push('/pest-services/pests')}
                 className="bg-emerald-800/30 backdrop-blur-sm rounded-xl p-6 hover:bg-emerald-800/40 transition-all duration-200 text-left group shadow-md hover:shadow-lg transform hover:-translate-y-1"
               >
                 <div className="flex items-center gap-4 mb-4">
@@ -144,8 +180,8 @@ export default function FarmerDashboard() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold mb-1">Pest Classification</h3>
-                    <p className="text-white/80 text-sm">Search or upload image to identify pests</p>
+                    <h3 className="text-xl font-semibold mb-1">Pest Library</h3>
+                    <p className="text-white/80 text-sm">Browse curated pest info and images</p>
                   </div>
                 </div>
               </button>
@@ -215,6 +251,65 @@ export default function FarmerDashboard() {
               </div>
             </div>
           )}
+
+          {/* My Bookings */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">My Bookings</h2>
+              <button
+                onClick={fetchBookings}
+                className="text-sm text-emerald-300 hover:text-emerald-200"
+              >
+                Refresh
+              </button>
+            </div>
+            {loadingBookings ? (
+              <div className="text-center text-white/80 py-6">Loading bookings...</div>
+            ) : bookings.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {bookings.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="bg-emerald-800/30 backdrop-blur-sm rounded-xl p-6 border border-white/10"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="text-xs text-white/60">Service</p>
+                        <h3 className="text-lg font-semibold">{booking.service?.title || 'Service'}</h3>
+                        <p className="text-sm text-white/70">
+                          Company: {booking.company?.company_name || 'Company'}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          booking.status === 'approved'
+                            ? 'bg-emerald-900/50 text-emerald-300'
+                            : booking.status === 'cancelled'
+                            ? 'bg-red-900/40 text-red-300'
+                            : 'bg-yellow-900/40 text-yellow-200'
+                        }`}
+                      >
+                        {booking.status}
+                      </span>
+                    </div>
+                    {booking.booking_notes && (
+                      <div className="text-sm text-white/80 mb-3">
+                        <p className="text-white/60 text-xs mb-1">Notes</p>
+                        <p>{booking.booking_notes}</p>
+                      </div>
+                    )}
+                    <p className="text-xs text-white/60">
+                      {booking.created_at ? new Date(booking.created_at).toLocaleString() : ''}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-white/70 py-8 bg-white/5 rounded-xl border border-white/10">
+                You have no bookings yet. Find a service and book from a pest page.
+              </div>
+            )}
+          </div>
 
           {/* Available Services */}
           <div className="mb-8">

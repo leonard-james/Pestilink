@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceBooking;
 use App\Models\CompanyService;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +27,7 @@ class BookingController extends Controller
         // Use transaction for ACID compliance
         return DB::transaction(function () use ($validated, $request) {
             $service = CompanyService::findOrFail($validated['service_id']);
+            $service->load(['company.user']);
             
             // Verify service is active
             if (!$service->is_active) {
@@ -42,6 +45,20 @@ class BookingController extends Controller
             ]);
 
             $booking->load(['service', 'company', 'user']);
+
+            // Notify admins and company owner about the new booking
+            $adminRecipients = User::where('role', 'admin')->pluck('name')->toArray();
+            $companyRecipient = $service->company?->user?->name;
+            $this->notifyUsers(
+                array_filter(array_merge($adminRecipients, [$companyRecipient])),
+                'booking.created',
+                [
+                    'booking_id' => $booking->id,
+                    'service_title' => $service->title,
+                    'company_name' => $service->company->company_name ?? '',
+                    'customer_name' => $request->user()->name,
+                ]
+            );
 
             return response()->json([
                 'message' => 'Booking created successfully',
@@ -142,6 +159,19 @@ class BookingController extends Controller
 
             $booking->load(['service', 'company', 'user']);
 
+            // Notify customer and admins about status change
+            $adminRecipients = User::where('role', 'admin')->pluck('name')->toArray();
+            $this->notifyUsers(
+                array_filter(array_merge([$booking->user?->name], $adminRecipients)),
+                'booking.status_updated',
+                [
+                    'booking_id' => $booking->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $validated['status'],
+                    'service_title' => $booking->service->title ?? '',
+                ]
+            );
+
             return response()->json([
                 'message' => 'Booking status updated successfully',
                 'booking' => $booking,
@@ -160,5 +190,28 @@ class BookingController extends Controller
             ->get();
 
         return response()->json(['audit_trail' => $auditTrail]);
+    }
+
+    /**
+     * Persist notifications for the provided recipients.
+     */
+    private function notifyUsers(array $recipients, string $type, array $payload): void
+    {
+        if (empty($recipients)) {
+            return;
+        }
+
+        $timestamp = now();
+        $rows = array_map(function ($recipient) use ($type, $payload, $timestamp) {
+            return [
+                'recipient_username' => $recipient,
+                'type' => $type,
+                'payload' => json_encode($payload),
+                'is_read' => false,
+                'created_at' => $timestamp,
+            ];
+        }, $recipients);
+
+        Notification::insert($rows);
     }
 }

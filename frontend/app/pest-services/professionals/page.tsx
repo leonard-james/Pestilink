@@ -13,28 +13,28 @@ const services = [
         location: 'Zone 8, Bulan Sor.',
         phone: '+63 999 111 5576',
         email: 'pestconservices@gmail.com',
-        link: '#',
+        link: '/services',
     },
     {
         name: 'PestBegone!',
         location: 'Fabrica, Bulan Sor.',
         phone: '+63 978 165 9056',
         email: 'pestbegone@gmail.com',
-        link: '#',
+        link: '/services',
     },
     {
         name: 'BugBuster Bulan',
         location: 'Zone 2, Bulan Sor.',
         phone: '+63 989 123 9456',
         email: 'bugbusterbulan@gmail.com',
-        link: '#',
+        link: '/services',
     },
     {
         name: 'PestPatrol Bulan',
         location: 'Polot, Bulan Sor.',
         phone: '+63 997 567 347',
         email: 'pestpatrolbulan@gmail.com',
-        link: '#',
+        link: '/services',
     },
 ];
 
