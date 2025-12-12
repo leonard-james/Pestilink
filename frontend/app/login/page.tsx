@@ -64,7 +64,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-50">
-        <Header />
+        <Header hideAuth={true} />
       </div>
 
       {/* Background Image and Overlay */}

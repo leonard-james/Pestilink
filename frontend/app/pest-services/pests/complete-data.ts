@@ -52,6 +52,13 @@ const pestImages: Record<string, string[]> = {
     'Cimex-lectularius – Bed-bug.avif',
     'Cimex-lectularius – Bed-bug1.jpg'
   ],
+  'Brown Leaf hopper': [
+    'Nephotettix-virescens – Green-leafhopper – Bubuyo.jpg',
+    'Nephotettix-virescens – Green-leafhopper – Bubuyo1.jpg',
+    'Nephotettix-virescens – Green-leafhopper – Bubuyo2.jpg',
+    'Nephotettix-virescens – Green-leafhopper – Bubuyo3.jpg',
+    'Nephotettix-virescens – Green-leafhopper – Bubuyo4.jpg'
+  ],
   'Brown Plant Hopper': [
     'Nilaparvata-lugens – Brown-plant-hopper – Kayumangging-dahon.jpg',
     'Nilaparvata-lugens – Brown-plant-hopper – Kayumangging-dahon1.jpg',
@@ -333,6 +340,19 @@ export const completePestData: PestData[] = [
     image: getPestImage('Stripe Rice Stem Borer'),
     images: getPestImages('Stripe Rice Stem Borer'),
     folderName: 'Stripe Rice Stem Borer',
+  },
+  {
+    slug: 'brown-leaf-hopper',
+    name: 'Brown Leaf Hopper',
+    description: 'Small wedge-shaped brown insect feeding on rice leaves and stems, vector of rice viruses.',
+    biology: 'Sucks plant sap; populations increase in dense planting; vectors for grassy stunt and ragged stunt viruses.',
+    signs: 'Yellowing, curling leaves, hopperburn, stunted growth.',
+    prevention: 'Proper spacing, weed removal, avoid excessive nitrogen, and resistant varieties.',
+    treatment: 'Insecticide sprays, introduce natural predators like spiders or ladybugs.',
+    diy: 'Spray water mixed with neem oil or chili extract to repel hoppers.',
+    image: getPestImage('Brown Leaf hopper'),
+    images: getPestImages('Brown Leaf hopper'),
+    folderName: 'Brown Leaf hopper',
   },
   {
     slug: 'brown-leaf-hopper',

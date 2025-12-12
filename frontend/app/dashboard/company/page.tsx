@@ -302,10 +302,10 @@ export default function CompanyDashboard() {
             )}
           </div>
 
-          {/* Bookings */}
+          {/* Orders */}
           <div className="mt-12">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Bookings</h2>
+              <h2 className="text-2xl font-bold">Orders</h2>
               <button
                 onClick={fetchBookings}
                 className="text-sm px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg"
@@ -315,7 +315,7 @@ export default function CompanyDashboard() {
             </div>
 
             {loadingBookings ? (
-              <div className="text-center text-white/70 py-6">Loading bookings...</div>
+              <div className="text-center text-white/70 py-6">Loading orders...</div>
             ) : bookings.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {bookings.map((booking) => (
@@ -371,7 +371,7 @@ export default function CompanyDashboard() {
               </div>
             ) : (
               <div className="text-center text-white/70 py-8 bg-white/5 rounded-xl border border-white/10">
-                No bookings yet.
+                No orders yet.
               </div>
             )}
           </div>

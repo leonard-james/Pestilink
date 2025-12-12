@@ -116,7 +116,7 @@ export default function SignupPage() {
 
       {/* Header */}
       <div className="sticky top-0 z-50">
-        <Header />
+        <Header hideAuth={true} />
       </div>
 
       {/* Main Content */}

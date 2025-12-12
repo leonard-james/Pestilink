@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 
-interface Service {
+interface Product {
   id: number;
   title: string;
   description: string;
@@ -26,66 +26,81 @@ interface OrderForm {
   farmerPhone: string;
   farmerAddress: string;
   serviceDate: string;
+  quantity: number;
   notes: string;
 }
 
-export default function ServicesPage() {
+export default function ProductsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isOrderCompleteModalOpen, setIsOrderCompleteModalOpen] = useState(false);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
   const [orderForm, setOrderForm] = useState<OrderForm>({
     farmerName: '',
     farmerEmail: '',
     farmerPhone: '',
     farmerAddress: '',
     serviceDate: '',
+    quantity: 1,
     notes: ''
   });
 
   useEffect(() => {
-    fetchServices();
-  }, []);
+    fetchProducts();
+    loadUserOrders();
+  }, [user]);
 
-  const fetchServices = async () => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/services`);
       if (response.ok) {
         const data = await response.json();
-        setServices(data);
+        setProducts(data);
       }
     } catch (error) {
-      console.error('Error fetching services:', error);
+      console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredServices = services.filter((service) => {
-    const matchesType = !filterType || service.title.toLowerCase().includes(filterType.toLowerCase());
-    const matchesLocation = !filterLocation || service.location.toLowerCase().includes(filterLocation.toLowerCase());
+  const loadUserOrders = () => {
+    if (user) {
+      const savedOrders = JSON.parse(localStorage.getItem('pestlink_orders') || '[]');
+      const userSpecificOrders = savedOrders.filter((order: any) => 
+        order.farmerEmail === user.email
+      );
+      setUserOrders(userSpecificOrders);
+    }
+  };
+
+  const filteredProducts = products.filter((product) => {
+    const matchesType = !filterType || product.title.toLowerCase().includes(filterType.toLowerCase());
+    const matchesLocation = !filterLocation || product.location.toLowerCase().includes(filterLocation.toLowerCase());
     return matchesType && matchesLocation;
   });
 
-  const handleAvailNow = (service: Service) => {
+  const handleAvailNow = (product: Product) => {
     if (!user) {
       router.push('/login');
       return;
     }
     
-    setSelectedService(service);
+    setSelectedProduct(product);
     setOrderForm({
       farmerName: user.name || '',
       farmerEmail: user.email || '',
       farmerPhone: '',
       farmerAddress: '',
       serviceDate: '',
+      quantity: 1,
       notes: ''
     });
     setIsOrderModalOpen(true);
@@ -94,7 +109,7 @@ export default function ServicesPage() {
   const handleOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedService) return;
+    if (!selectedProduct) return;
 
     // Create order object
     const order = {
@@ -103,11 +118,12 @@ export default function ServicesPage() {
       farmerEmail: orderForm.farmerEmail,
       farmerPhone: orderForm.farmerPhone,
       farmerAddress: orderForm.farmerAddress,
-      serviceTitle: selectedService.title,
-      companyName: selectedService.company_name,
+      serviceTitle: selectedProduct.title,
+      companyName: selectedProduct.company_name,
       orderDate: new Date().toISOString(),
-      status: 'pending' as const,
-      totalAmount: selectedService.price || 0,
+      status: 'confirmed' as const,
+      quantity: orderForm.quantity,
+      totalAmount: (selectedProduct.price || 0) * orderForm.quantity,
       notes: orderForm.notes,
       serviceDate: orderForm.serviceDate
     };
@@ -116,6 +132,9 @@ export default function ServicesPage() {
     const existingOrders = JSON.parse(localStorage.getItem('pestlink_orders') || '[]');
     existingOrders.push(order);
     localStorage.setItem('pestlink_orders', JSON.stringify(existingOrders));
+
+    // Update user orders
+    loadUserOrders();
 
     // Close order modal and show success modal
     setIsOrderModalOpen(false);
@@ -126,9 +145,11 @@ export default function ServicesPage() {
     const { name, value } = e.target;
     setOrderForm(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'quantity' ? parseInt(value) || 1 : value
     }));
   };
+
+
 
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col relative">
@@ -147,17 +168,19 @@ export default function ServicesPage() {
       <main className="relative z-10 flex-1 ml-20 peer-hover:ml-64 transition-all duration-300 container mx-auto px-4 pt-8 pb-24 min-h-[calc(100vh-200px)]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">Pest Control Services</h1>
+            <h1 className="text-4xl font-bold mb-4">Available Products</h1>
             <p className="text-white/80 max-w-2xl mx-auto">
-              Browse and connect with professional pest control companies in your area.
+              Browse products from professional pest control companies in your area.
             </p>
           </div>
+
+
 
           {/* Filters */}
           <div className="flex flex-wrap gap-4 justify-center mb-8">
             <input
               type="text"
-              placeholder="Search by service type..."
+              placeholder="Search by product type..."
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
               className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder:text-white/60 border border-white/20"
@@ -171,46 +194,46 @@ export default function ServicesPage() {
             />
           </div>
 
-          {/* Services Grid */}
+          {/* Products Grid */}
           {loading ? (
-            <div className="text-center text-white/80">Loading services...</div>
-          ) : filteredServices.length > 0 ? (
+            <div className="text-center text-white/80">Loading products...</div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredServices.map((service) => (
+              {filteredProducts.map((product) => (
                 <div
-                  key={service.id}
+                  key={product.id}
                   className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl p-6 text-white hover:bg-emerald-800/40 transition"
                 >
-                  {service.image && (
+                  {product.image && (
                     <div className="w-full h-48 rounded-lg overflow-hidden mb-4">
                       <img
-                        src={service.image}
-                        alt={service.title}
+                        src={product.image}
+                        alt={product.title}
                         className="w-full h-full object-cover"
                       />
                     </div>
                   )}
-                  <h3 className="text-lg font-bold mb-2">{service.title}</h3>
-                  <p className="text-sm text-white/80 mb-4 line-clamp-2">{service.description}</p>
+                  <h3 className="text-lg font-bold mb-2">{product.title}</h3>
+                  <p className="text-sm text-white/80 mb-4 line-clamp-2">{product.description}</p>
                   
                   <div className="space-y-2 mb-4 text-sm">
                     <div className="flex items-start gap-2">
-                      <span className="opacity-90">{service.company_name}</span>
+                      <span className="opacity-90">{product.company_name}</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="opacity-90">{service.location}</span>
+                      <span className="opacity-90">{product.location}</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="opacity-90">{service.phone}</span>
+                      <span className="opacity-90">{product.phone}</span>
                     </div>
-                    {service.price && (
+                    {product.price && (
                       <div className="flex items-start gap-2">
-                        <span className="opacity-90 font-semibold">₱{service.price.toLocaleString()}</span>
+                        <span className="opacity-90 font-semibold">₱{product.price.toLocaleString()}</span>
                       </div>
                     )}
-                    {service.pest_types && service.pest_types.length > 0 && (
+                    {product.pest_types && product.pest_types.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {service.pest_types.slice(0, 4).map((pest) => (
+                        {product.pest_types.slice(0, 4).map((pest) => (
                           <span
                             key={pest}
                             className="text-xs bg-emerald-900/40 text-emerald-200 px-2 py-1 rounded-full border border-emerald-500/30"
@@ -218,15 +241,15 @@ export default function ServicesPage() {
                             {pest}
                           </span>
                         ))}
-                        {service.pest_types.length > 4 && (
-                          <span className="text-xs text-white/60">+{service.pest_types.length - 4} more</span>
+                        {product.pest_types.length > 4 && (
+                          <span className="text-xs text-white/60">+{product.pest_types.length - 4} more</span>
                         )}
                       </div>
                     )}
                   </div>
 
                   <button
-                    onClick={() => handleAvailNow(service)}
+                    onClick={() => handleAvailNow(product)}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-center font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
                     AVAIL NOW
@@ -236,7 +259,79 @@ export default function ServicesPage() {
             </div>
           ) : (
             <div className="text-center text-white/80">
-              {services.length === 0 ? 'No services available yet.' : 'No services match your filters.'}
+              {products.length === 0 ? 'No products available yet.' : 'No products match your filters.'}
+            </div>
+          )}
+
+          {/* Order History Section */}
+          {user && userOrders.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-6 text-center">Order History</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl p-6 text-white border border-white/10"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="text-lg font-bold mb-1">{order.serviceTitle}</h3>
+                        <p className="text-sm text-white/80">{order.companyName}</p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          order.status === 'completed'
+                            ? 'bg-green-900/50 text-green-300'
+                            : order.status === 'cancelled'
+                            ? 'bg-red-900/50 text-red-300'
+                            : order.status === 'confirmed'
+                            ? 'bg-blue-900/50 text-blue-300'
+                            : order.status === 'preparing'
+                            ? 'bg-purple-900/50 text-purple-300'
+                            : order.status === 'out_for_delivery'
+                            ? 'bg-orange-900/50 text-orange-300'
+                            : 'bg-yellow-900/50 text-yellow-300'
+                        }`}
+                      >
+                        {order.status === 'confirmed' ? 'Confirmed' :
+                         order.status === 'preparing' ? 'Preparing' :
+                         order.status === 'out_for_delivery' ? 'Out for Delivery' :
+                         order.status === 'completed' ? 'Completed' :
+                         order.status === 'cancelled' ? 'Cancelled' : 'Pending'}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      {order.quantity && (
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Quantity:</span>
+                          <span>{order.quantity}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Total Amount:</span>
+                        <span className="font-semibold">₱{order.totalAmount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Order Date:</span>
+                        <span>{new Date(order.orderDate).toLocaleDateString()}</span>
+                      </div>
+                      {order.serviceDate && (
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Service Date:</span>
+                          <span>{new Date(order.serviceDate).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                      {order.notes && (
+                        <div className="mt-3 pt-3 border-t border-white/20">
+                          <p className="text-white/70 text-xs mb-1">Notes:</p>
+                          <p className="text-sm">{order.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -247,21 +342,26 @@ export default function ServicesPage() {
       </div>
 
       {/* Order Modal */}
-      {isOrderModalOpen && selectedService && (
+      {isOrderModalOpen && selectedProduct && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">Order Service</h2>
+              <h2 className="text-xl font-bold mb-4">Order Product</h2>
               <div className="mb-4 p-3 bg-gray-700/50 rounded-lg">
-                <h3 className="font-semibold text-emerald-400">{selectedService.title}</h3>
-                <p className="text-sm text-gray-300">{selectedService.company_name}</p>
-                {selectedService.price && (
-                  <p className="text-sm font-semibold">₱{selectedService.price.toLocaleString()}</p>
+                <h3 className="font-semibold text-emerald-400">{selectedProduct.title}</h3>
+                <p className="text-sm text-gray-300">{selectedProduct.company_name}</p>
+                {selectedProduct.price && (
+                  <div className="text-sm">
+                    <p>Unit Price: ₱{selectedProduct.price.toLocaleString()}</p>
+                    <p className="font-semibold text-emerald-400">
+                      Total: ₱{((selectedProduct.price || 0) * orderForm.quantity).toLocaleString()}
+                    </p>
+                  </div>
                 )}
               </div>
               
               <form onSubmit={handleOrderSubmit}>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">
                       Full Name <span className="text-red-500">*</span>
@@ -306,13 +406,14 @@ export default function ServicesPage() {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Address <span className="text-red-500">*</span>
+                      Quantity <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
-                      name="farmerAddress"
-                      value={orderForm.farmerAddress}
+                      type="number"
+                      name="quantity"
+                      value={orderForm.quantity}
                       onChange={handleInputChange}
+                      min="1"
                       className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
                       required
                     />
@@ -332,20 +433,34 @@ export default function ServicesPage() {
                       required
                     />
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Additional Notes
-                    </label>
-                    <textarea
-                      name="notes"
-                      value={orderForm.notes}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
-                      placeholder="Any specific requirements or notes..."
-                    />
-                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Address <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="farmerAddress"
+                    value={orderForm.farmerAddress}
+                    onChange={handleInputChange}
+                    className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Additional Notes
+                  </label>
+                  <textarea
+                    name="notes"
+                    value={orderForm.notes}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Any specific requirements or notes..."
+                  />
                 </div>
                 
                 <div className="mt-6 flex justify-end space-x-3">
@@ -353,7 +468,7 @@ export default function ServicesPage() {
                     type="button"
                     onClick={() => {
                       setIsOrderModalOpen(false);
-                      setSelectedService(null);
+                      setSelectedProduct(null);
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-colors"
                   >
@@ -384,7 +499,7 @@ export default function ServicesPage() {
               </div>
               <h3 className="text-lg font-bold text-white mb-2">Order Complete!</h3>
               <p className="text-gray-300 text-sm mb-4">
-                Your service order has been submitted successfully. The company will contact you soon to confirm the details.
+                Your product order has been submitted successfully. The company will contact you soon to confirm the details.
               </p>
               <button
                 onClick={() => setIsOrderCompleteModalOpen(false)}
@@ -399,4 +514,3 @@ export default function ServicesPage() {
     </div>
   );
 }
-

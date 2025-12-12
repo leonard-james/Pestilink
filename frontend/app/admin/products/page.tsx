@@ -564,7 +564,6 @@ export default function ProductManagement() {
           </div>
         </div>
       )}
-        </main>
       </div>
     </div>
   );

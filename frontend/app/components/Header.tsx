@@ -83,7 +83,7 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
     pathname === '/about' || 
     pathname === '/pest-services' || 
     pathname.startsWith('/pest-services/') ||
-    pathname === '/services'
+    pathname === '/products'
   );
 
   return (
@@ -126,11 +126,11 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                     Home
                   </button>
                   <button 
-                    onClick={() => router.push('/services')}
+                    onClick={() => router.push('/products')}
                     className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
                     type="button"
                   >
-                    Services
+                    Products
                   </button>
                   <button 
                     onClick={() => router.push('/pest-services')}
@@ -314,7 +314,7 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                     </button>
                     <button 
                       onClick={() => {
-                        router.push('/services');
+                        router.push('/products');
                         setIsSidebarOpen(false);
                       }}
                       className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
@@ -322,7 +322,7 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                       <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
-                      Browse Services
+                      Browse Products
                     </button>
                   </nav>
                 </>
