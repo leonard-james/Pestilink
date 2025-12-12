@@ -81,6 +81,24 @@ export default function ProductsPage() {
     }
   };
 
+  const removeUserOrder = (orderId: number) => {
+    const savedOrders = JSON.parse(localStorage.getItem('pestlink_orders') || '[]');
+    const updatedOrders = savedOrders.filter((order: any) => order.id !== orderId);
+    localStorage.setItem('pestlink_orders', JSON.stringify(updatedOrders));
+    loadUserOrders();
+  };
+
+  const clearCompletedUserOrders = () => {
+    if (confirm('Are you sure you want to clear all completed orders? This action cannot be undone.')) {
+      const savedOrders = JSON.parse(localStorage.getItem('pestlink_orders') || '[]');
+      const updatedOrders = savedOrders.filter((order: any) => 
+        !(order.farmerEmail === user?.email && order.status === 'completed')
+      );
+      localStorage.setItem('pestlink_orders', JSON.stringify(updatedOrders));
+      loadUserOrders();
+    }
+  };
+
   const filteredProducts = products.filter((product) => {
     const matchesType = !filterType || product.title.toLowerCase().includes(filterType.toLowerCase());
     const matchesLocation = !filterLocation || product.location.toLowerCase().includes(filterLocation.toLowerCase());
@@ -121,7 +139,7 @@ export default function ProductsPage() {
       serviceTitle: selectedProduct.title,
       companyName: selectedProduct.company_name,
       orderDate: new Date().toISOString(),
-      status: 'confirmed' as const,
+      status: 'pending' as const,
       quantity: orderForm.quantity,
       totalAmount: (selectedProduct.price || 0) * orderForm.quantity,
       notes: orderForm.notes,
@@ -266,7 +284,15 @@ export default function ProductsPage() {
           {/* Order History Section */}
           {user && userOrders.length > 0 && (
             <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-6 text-center">Order History</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Order History</h2>
+                <button
+                  onClick={clearCompletedUserOrders}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-medium transition-colors"
+                >
+                  Clear Completed Orders
+                </button>
+              </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userOrders.map((order) => (
                   <div
@@ -274,31 +300,44 @@ export default function ProductsPage() {
                     className="bg-emerald-800/30 backdrop-blur-sm rounded-2xl p-6 text-white border border-white/10"
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-lg font-bold mb-1">{order.serviceTitle}</h3>
                         <p className="text-sm text-white/80">{order.companyName}</p>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          order.status === 'completed'
-                            ? 'bg-green-900/50 text-green-300'
-                            : order.status === 'cancelled'
-                            ? 'bg-red-900/50 text-red-300'
-                            : order.status === 'confirmed'
-                            ? 'bg-blue-900/50 text-blue-300'
-                            : order.status === 'preparing'
-                            ? 'bg-purple-900/50 text-purple-300'
-                            : order.status === 'out_for_delivery'
-                            ? 'bg-orange-900/50 text-orange-300'
-                            : 'bg-yellow-900/50 text-yellow-300'
-                        }`}
-                      >
-                        {order.status === 'confirmed' ? 'Confirmed' :
-                         order.status === 'preparing' ? 'Preparing' :
-                         order.status === 'out_for_delivery' ? 'Out for Delivery' :
-                         order.status === 'completed' ? 'Completed' :
-                         order.status === 'cancelled' ? 'Cancelled' : 'Pending'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            order.status === 'completed'
+                              ? 'bg-green-900/50 text-green-300'
+                              : order.status === 'cancelled'
+                              ? 'bg-red-900/50 text-red-300'
+                              : order.status === 'confirmed'
+                              ? 'bg-blue-900/50 text-blue-300'
+                              : order.status === 'preparing'
+                              ? 'bg-purple-900/50 text-purple-300'
+                              : order.status === 'out_for_delivery'
+                              ? 'bg-orange-900/50 text-orange-300'
+                              : 'bg-yellow-900/50 text-yellow-300'
+                          }`}
+                        >
+                          {order.status === 'confirmed' ? 'Confirmed' :
+                           order.status === 'preparing' ? 'Preparing' :
+                           order.status === 'out_for_delivery' ? 'Out for Delivery' :
+                           order.status === 'completed' ? 'Completed' :
+                           order.status === 'cancelled' ? 'Cancelled' : 'Pending'}
+                        </span>
+                        {(order.status === 'completed' || order.status === 'cancelled') && (
+                          <button
+                            onClick={() => removeUserOrder(order.id)}
+                            className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-red-900/30"
+                            title="Remove Order"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="space-y-2 text-sm">

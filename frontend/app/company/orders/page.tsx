@@ -13,7 +13,7 @@ interface Order {
   serviceTitle: string;
   companyName: string;
   orderDate: string;
-  status: 'confirmed' | 'preparing' | 'out_for_delivery' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'preparing' | 'out_for_delivery' | 'completed' | 'cancelled';
   quantity?: number;
   totalAmount: number;
   notes?: string;
@@ -45,6 +45,20 @@ export default function CompanyOrdersManagement() {
     localStorage.setItem('pestlink_orders', JSON.stringify(updatedOrders));
   };
 
+  const removeCompletedOrder = (orderId: number) => {
+    const updatedOrders = orders.filter(order => order.id !== orderId);
+    setOrders(updatedOrders);
+    localStorage.setItem('pestlink_orders', JSON.stringify(updatedOrders));
+  };
+
+  const clearAllCompletedOrders = () => {
+    if (confirm('Are you sure you want to clear all completed orders? This action cannot be undone.')) {
+      const updatedOrders = orders.filter(order => order.status !== 'completed');
+      setOrders(updatedOrders);
+      localStorage.setItem('pestlink_orders', JSON.stringify(updatedOrders));
+    }
+  };
+
   const filteredOrders = orders.filter(order => {
     // Automatically hide completed orders from main view
     const isNotCompleted = order.status !== 'completed';
@@ -57,6 +71,7 @@ export default function CompanyOrdersManagement() {
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
+      case 'pending': return 'bg-yellow-900/50 text-yellow-300';
       case 'confirmed': return 'bg-blue-900/50 text-blue-300';
       case 'preparing': return 'bg-purple-900/50 text-purple-300';
       case 'out_for_delivery': return 'bg-orange-900/50 text-orange-300';
@@ -68,6 +83,7 @@ export default function CompanyOrdersManagement() {
 
   const getStatusText = (status: Order['status']) => {
     switch (status) {
+      case 'pending': return 'Pending';
       case 'confirmed': return 'Confirmed';
       case 'preparing': return 'Preparing to Ship';
       case 'out_for_delivery': return 'Out for Delivery';
@@ -121,6 +137,7 @@ export default function CompanyOrdersManagement() {
                   className="bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Statuses</option>
+                  <option value="pending">Pending</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="preparing">Preparing to Ship</option>
                   <option value="out_for_delivery">Out for Delivery</option>
@@ -192,6 +209,17 @@ export default function CompanyOrdersManagement() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex justify-end space-x-2">
+                              {order.status === 'pending' && (
+                                <button
+                                  onClick={() => updateOrderStatus(order.id, 'confirmed')}
+                                  className="text-green-400 hover:text-green-300 p-1.5 rounded-full hover:bg-green-900/30"
+                                  title="Confirm Order"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </button>
+                              )}
                               {order.status === 'confirmed' && (
                                 <button
                                   onClick={() => updateOrderStatus(order.id, 'preparing')}
@@ -223,7 +251,7 @@ export default function CompanyOrdersManagement() {
                                   <FiPackage size={18} />
                                 </button>
                               )}
-                              {(order.status === 'confirmed' || order.status === 'preparing' || order.status === 'out_for_delivery') && (
+                              {(order.status === 'pending' || order.status === 'confirmed' || order.status === 'preparing' || order.status === 'out_for_delivery') && (
                                 <button
                                   onClick={() => updateOrderStatus(order.id, 'cancelled')}
                                   className="text-red-400 hover:text-red-300 p-1.5 rounded-full hover:bg-red-900/30"
@@ -247,7 +275,13 @@ export default function CompanyOrdersManagement() {
             </div>
 
             {/* Order Statistics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4">
+                <div className="text-2xl font-bold text-yellow-400">
+                  {orders.filter(o => o.status === 'pending').length}
+                </div>
+                <div className="text-sm text-gray-400">Pending</div>
+              </div>
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4">
                 <div className="text-2xl font-bold text-purple-400">
                   {orders.filter(o => o.status === 'preparing').length}
@@ -277,7 +311,15 @@ export default function CompanyOrdersManagement() {
             {/* Order History Section */}
             {orders.filter(o => o.status === 'completed').length > 0 && (
               <div className="mt-8">
-                <h2 className="text-xl font-bold mb-4">Order History (Completed Orders)</h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Order History (Completed Orders)</h2>
+                  <button
+                    onClick={clearAllCompletedOrders}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-medium transition-colors"
+                  >
+                    Clear All Completed
+                  </button>
+                </div>
                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left text-gray-300">
@@ -289,6 +331,7 @@ export default function CompanyOrdersManagement() {
                           <th scope="col" className="px-6 py-3">Date</th>
                           <th scope="col" className="px-6 py-3">Amount</th>
                           <th scope="col" className="px-6 py-3">Status</th>
+                          <th scope="col" className="px-6 py-3 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -323,6 +366,15 @@ export default function CompanyOrdersManagement() {
                               <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300">
                                 Completed
                               </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <button
+                                onClick={() => removeCompletedOrder(order.id)}
+                                className="text-red-400 hover:text-red-300 p-1.5 rounded-full hover:bg-red-900/30"
+                                title="Remove Order"
+                              >
+                                <FiX size={16} />
+                              </button>
                             </td>
                           </tr>
                         ))}

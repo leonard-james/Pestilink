@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiUsers, FiUserPlus, FiSearch, FiFilter, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Image from 'next/image';
 import DashboardSidebar from "../../components/DashboardSidebar";
@@ -9,7 +9,7 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: 'farmer' | 'company' | 'admin';
   status: 'active' | 'inactive' | 'suspended';
   lastLogin: string;
   createdAt?: string;
@@ -23,17 +23,57 @@ export default function UserManagement() {
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'date-asc' | 'date-desc'>('name-asc');
   const [filters, setFilters] = useState({
     status: '' as '' | 'active' | 'inactive' | 'suspended',
+    role: '' as '' | 'farmer' | 'company' | 'admin',
     lastLogin: '' as '' | 'today' | 'week' | 'month'
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'active', lastLogin: '2023-11-15 14:30' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'active', lastLogin: '2023-11-14 09:15' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Manager', status: 'inactive', lastLogin: '2023-11-10 16:45' },
-    { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'User', status: 'suspended', lastLogin: '2023-11-05 11:20' },
-    { id: 5, name: 'Charlie Wilson', email: 'charlie@example.com', role: 'User', status: 'active', lastLogin: '2023-11-16 08:30' },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const usersPerPage = 5;
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const getApiBase = () => {
+    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    return base.replace(/\/?$/, '');
+  };
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${getApiBase()}/api/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Transform backend data to match our interface
+        const transformedUsers = data.map((user: any) => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role || 'farmer',
+          status: user.status || 'active',
+          lastLogin: user.last_login || user.lastLogin || user.updated_at || user.created_at,
+          createdAt: user.created_at || user.createdAt
+        }));
+        setUsers(transformedUsers);
+      } else {
+        console.error('Failed to fetch users:', response.status, response.statusText);
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   // Apply filters
@@ -46,6 +86,9 @@ export default function UserManagement() {
 
     // Status filter
     const matchesStatus = !filters.status || user.status === filters.status;
+    
+    // Role filter
+    const matchesRole = !filters.role || user.role === filters.role;
     
     // Alphabetical filter (removed)
     
@@ -66,7 +109,7 @@ export default function UserManagement() {
       }
     })();
     
-    return matchesSearch && matchesStatus && matchesLastLogin;
+    return matchesSearch && matchesStatus && matchesRole && matchesLastLogin;
   });
 
   // Apply sorting
@@ -96,7 +139,7 @@ export default function UserManagement() {
       id: 0, // 0 indicates a new user
       name: '',
       email: '',
-      role: 'User',
+      role: 'farmer',
       status: 'active',
       lastLogin: new Date().toISOString()
     });
@@ -111,22 +154,55 @@ export default function UserManagement() {
     }
   };
 
-  const handleDelete = (userId: number) => {
+  const handleDelete = async (userId: number) => {
     if (confirm('Are you sure you want to delete this user?')) {
-      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-      // In a real app, you would call an API here
-      console.log('Deleted user:', userId);
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`${getApiBase()}/api/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+          alert('User deleted successfully!');
+        } else {
+          alert('Failed to delete user. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('An error occurred while deleting the user.');
+      }
     }
   };
 
-  const handleStatusChange = (userId: number, newStatus: User['status']) => {
-    setUsers(prevUsers =>
-      prevUsers.map(user =>
-        user.id === userId ? { ...user, status: newStatus } : user
-      )
-    );
-    // In a real app, you would call an API here
-    console.log(`Updated status of user ${userId} to ${newStatus}`);
+  const handleStatusChange = async (userId: number, newStatus: User['status']) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${getApiBase()}/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (response.ok) {
+        setUsers(prevUsers =>
+          prevUsers.map(user =>
+            user.id === userId ? { ...user, status: newStatus } : user
+          )
+        );
+      } else {
+        alert('Failed to update user status. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      alert('An error occurred while updating the user status.');
+    }
   };
 
   const validateEmail = (email: string) => {
@@ -134,7 +210,7 @@ export default function UserManagement() {
     return re.test(email);
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
 
@@ -160,34 +236,74 @@ export default function UserManagement() {
       return;
     }
 
-    if (editingUser.id === 0) {
-      // Add new user
-      const newUser = {
-        ...editingUser,
-        id: Math.max(0, ...users.map(u => u.id)) + 1, // Generate new ID
-        lastLogin: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      };
+    try {
+      const token = localStorage.getItem('authToken');
       
-      setUsers(prevUsers => [...prevUsers, newUser]);
-      // In a real app, you would call an API here
-      console.log('Added new user:', newUser);
-      alert('User added successfully!');
-    } else {
-      // Update existing user
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === editingUser.id ? { 
-            ...user, 
-            ...editingUser,
-            // Preserve the original creation date
-            createdAt: user.createdAt || new Date().toISOString()
-          } : user
-        )
-      );
-      // In a real app, you would call an API here
-      console.log('Updated user:', editingUser);
-      alert('User updated successfully!');
+      if (editingUser.id === 0) {
+        // Add new user
+        const response = await fetch(`${getApiBase()}/api/admin/users`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: editingUser.name,
+            email: editingUser.email,
+            role: editingUser.role,
+            status: editingUser.status,
+          }),
+        });
+        
+        if (response.ok) {
+          const newUser = await response.json();
+          setUsers(prevUsers => [...prevUsers, {
+            ...newUser,
+            lastLogin: newUser.last_login || newUser.lastLogin || new Date().toISOString(),
+            createdAt: newUser.created_at || newUser.createdAt || new Date().toISOString()
+          }]);
+          alert('User added successfully!');
+        } else {
+          alert('Failed to add user. Please try again.');
+          return;
+        }
+      } else {
+        // Update existing user
+        const response = await fetch(`${getApiBase()}/api/admin/users/${editingUser.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: editingUser.name,
+            email: editingUser.email,
+            role: editingUser.role,
+            status: editingUser.status,
+          }),
+        });
+        
+        if (response.ok) {
+          setUsers(prevUsers =>
+            prevUsers.map(user =>
+              user.id === editingUser.id ? { 
+                ...user, 
+                ...editingUser,
+                // Preserve the original creation date
+                createdAt: user.createdAt || new Date().toISOString()
+              } : user
+            )
+          );
+          alert('User updated successfully!');
+        } else {
+          alert('Failed to update user. Please try again.');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error saving user:', error);
+      alert('An error occurred while saving the user.');
+      return;
     }
     
     // Close modal and reset form
@@ -250,7 +366,7 @@ export default function UserManagement() {
                     <FiUsers className="mr-3" />
                     User Management
                   </h1>
-                  <p className="text-gray-400 mt-1">Manage your application users and permissions</p>
+                  <p className="text-gray-400 mt-1">Manage farmers, companies, and admin users</p>
                 </div>
                 <button 
                   onClick={handleAddUser}
@@ -295,6 +411,22 @@ export default function UserManagement() {
                 {showFilters && (
                   <div className="mt-4 pt-4 border-t border-gray-700/50">
                     <div className="flex flex-col sm:flex-row gap-3 items-end">
+                      {/* Role Filter */}
+                      <div className="w-full sm:w-auto">
+                        <label className="block text-xs font-medium text-gray-400 mb-1">User Type</label>
+                        <select
+                          name="role"
+                          value={filters.role}
+                          onChange={handleFilterChange}
+                          className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">All Types</option>
+                          <option value="farmer">Farmers</option>
+                          <option value="company">Companies</option>
+                          <option value="admin">Admins</option>
+                        </select>
+                      </div>
+                      
                       {/* Status Filter */}
                       <div className="w-full sm:w-auto">
                         <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
@@ -361,7 +493,23 @@ export default function UserManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {currentUsers.length > 0 ? (
+                      {loading ? (
+                        Array.from({ length: usersPerPage }).map((_, index) => (
+                          <tr key={index} className="border-t border-gray-700/50 animate-pulse">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center">
+                                <div className="h-8 w-8 rounded-full bg-gray-600/30 mr-3"></div>
+                                <div className="h-4 bg-gray-600/30 rounded w-32"></div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4"><div className="h-4 bg-gray-600/30 rounded w-40"></div></td>
+                            <td className="px-6 py-4"><div className="h-6 bg-gray-600/30 rounded w-16"></div></td>
+                            <td className="px-6 py-4"><div className="h-6 bg-gray-600/30 rounded w-16"></div></td>
+                            <td className="px-6 py-4"><div className="h-4 bg-gray-600/30 rounded w-24"></div></td>
+                            <td className="px-6 py-4"><div className="h-8 bg-gray-600/30 rounded w-20 ml-auto"></div></td>
+                          </tr>
+                        ))
+                      ) : currentUsers.length > 0 ? (
                         currentUsers.map((user) => (
                           <tr key={user.id} className="border-t border-gray-700/50 hover:bg-gray-700/20 transition-colors">
                             <td className="px-6 py-4 font-medium whitespace-nowrap">
@@ -374,8 +522,13 @@ export default function UserManagement() {
                             </td>
                             <td className="px-6 py-4">{user.email}</td>
                             <td className="px-6 py-4">
-                              <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-900/50 text-blue-300">
-                                {user.role}
+                              <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                                user.role === 'farmer' ? 'bg-green-900/50 text-green-300' :
+                                user.role === 'company' ? 'bg-blue-900/50 text-blue-300' :
+                                'bg-purple-900/50 text-purple-300'
+                              }`}>
+                                {user.role === 'farmer' ? 'Farmer' : 
+                                 user.role === 'company' ? 'Company' : 'Admin'}
                               </span>
                             </td>
                             <td className="px-6 py-4">
@@ -529,9 +682,9 @@ export default function UserManagement() {
                         className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                         required
                       >
-                        <option value="User">User</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Manager">Manager</option>
+                        <option value="farmer">Farmer</option>
+                        <option value="company">Company</option>
+                        <option value="admin">Admin</option>
                       </select>
                     </div>
                     <div>

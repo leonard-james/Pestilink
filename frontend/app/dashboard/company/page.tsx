@@ -46,6 +46,7 @@ export default function CompanyDashboard() {
     description: '',
     price: '',
     service_type: '',
+    item_type: 'service' as 'service' | 'product',
     pest_types: '',
     image: null as File | null,
   });
@@ -138,7 +139,7 @@ export default function CompanyDashboard() {
       formDataToSend.append('title', formData.title);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('price', formData.price || '0');
-      formDataToSend.append('service_type', formData.service_type);
+      formDataToSend.append('service_type', formData.item_type === 'product' ? 'product' : formData.service_type);
       // Use selectedPests if available, otherwise fall back to pest_types input
       const pestsToSend = selectedPests.length > 0 ? selectedPests.join(', ') : formData.pest_types;
       formDataToSend.append('pest_types', pestsToSend);
@@ -167,6 +168,7 @@ export default function CompanyDashboard() {
           description: '',
           price: '',
           service_type: '',
+          item_type: 'service',
           pest_types: '',
           image: null,
         });
@@ -213,13 +215,13 @@ export default function CompanyDashboard() {
               onClick={() => setShowAddModal(true)}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium"
             >
-              + Add Service
+              + Add Service/Product
             </button>
           </div>
 
-          {/* Services List */}
+          {/* Services/Products List */}
           <div>
-            <h2 className="text-2xl font-bold mb-4">My Services</h2>
+            <h2 className="text-2xl font-bold mb-4">My Services/Products</h2>
             {loading ? (
               <div className="text-center text-white/80 py-8">Loading services...</div>
             ) : services.length > 0 ? (
@@ -238,10 +240,19 @@ export default function CompanyDashboard() {
                         />
                       </div>
                     )}
-                    <h3 className="text-lg font-bold mb-2">{service.title}</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-bold">{service.title}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        service.service_type === 'product' 
+                          ? 'bg-blue-900/50 text-blue-300' 
+                          : 'bg-green-900/50 text-green-300'
+                      }`}>
+                        {service.service_type === 'product' ? 'Product' : 'Service'}
+                      </span>
+                    </div>
                     <p className="text-sm text-white/80 mb-4 line-clamp-2">{service.description}</p>
                     <div className="text-sm text-white/70 mb-4">
-                      <p>Type: {service.service_type}</p>
+                      <p>Category: {service.service_type}</p>
                       {service.price && <p className="font-semibold">₱{service.price.toLocaleString()}</p>}
                       {service.pest_types && service.pest_types.length > 0 && (
                         <p>Pests: {service.pest_types.join(', ')}</p>
@@ -256,6 +267,7 @@ export default function CompanyDashboard() {
                             description: service.description,
                             price: service.price?.toString() || '',
                             service_type: service.service_type || '',
+                            item_type: (service.service_type === 'product' ? 'product' : 'service') as 'service' | 'product',
                             pest_types: Array.isArray(service.pest_types) ? service.pest_types.join(', ') : '',
                             image: null,
                           });
@@ -298,14 +310,14 @@ export default function CompanyDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="text-center text-white/80 py-8">No services posted yet. Add your first service!</div>
+              <div className="text-center text-white/80 py-8">No services or products posted yet. Add your first item!</div>
             )}
           </div>
 
-          {/* Orders */}
+          {/* Bookings */}
           <div className="mt-12">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Orders</h2>
+              <h2 className="text-2xl font-bold">Bookings</h2>
               <button
                 onClick={fetchBookings}
                 className="text-sm px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg"
@@ -315,7 +327,7 @@ export default function CompanyDashboard() {
             </div>
 
             {loadingBookings ? (
-              <div className="text-center text-white/70 py-6">Loading orders...</div>
+              <div className="text-center text-white/70 py-6">Loading bookings...</div>
             ) : bookings.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {bookings.map((booking) => (
@@ -371,7 +383,7 @@ export default function CompanyDashboard() {
               </div>
             ) : (
               <div className="text-center text-white/70 py-8 bg-white/5 rounded-xl border border-white/10">
-                No orders yet.
+                No bookings yet.
               </div>
             )}
           </div>
@@ -381,9 +393,23 @@ export default function CompanyDashboard() {
       {/* Add Service Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowAddModal(false)} />
+          <div className="absolute inset-0 bg-black/60" onClick={() => {
+            setShowAddModal(false);
+            setEditingService(null);
+            setFormData({
+              title: '',
+              description: '',
+              price: '',
+              service_type: '',
+              item_type: 'service',
+              pest_types: '',
+              image: null,
+            });
+            setSelectedPests([]);
+            setImagePreview(null);
+          }} />
           <div className="relative bg-gray-900 w-full max-w-2xl rounded-xl p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">{editingService ? 'Edit Service' : 'Add New Service'}</h2>
+            <h2 className="text-2xl font-bold mb-4">{editingService ? 'Edit Service/Product' : 'Add New Service/Product'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => {
               // Close dropdown when clicking outside
               if ((e.target as HTMLElement).closest('.pest-dropdown-container') === null) {
@@ -391,7 +417,20 @@ export default function CompanyDashboard() {
               }
             }}>
               <div>
-                <label className="block text-white/80 mb-2">Service Title</label>
+                <label className="block text-white/80 mb-2">Item Type</label>
+                <select
+                  value={formData.item_type}
+                  onChange={(e) => setFormData({ ...formData, item_type: e.target.value as 'service' | 'product' })}
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
+                >
+                  <option value="service">Service</option>
+                  <option value="product">Product</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white/80 mb-2">
+                  {formData.item_type === 'product' ? 'Product' : 'Service'} Title
+                </label>
                 <input
                   type="text"
                   required
@@ -421,13 +460,41 @@ export default function CompanyDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-white/80 mb-2">Service Type</label>
-                  <input
-                    type="text"
-                    value={formData.service_type}
-                    onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                  />
+                  <label className="block text-white/80 mb-2">
+                    {formData.item_type === 'product' ? 'Product Category' : 'Service Category'}
+                  </label>
+                  {formData.item_type === 'product' ? (
+                    <select
+                      value={formData.service_type}
+                      onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
+                      className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
+                    >
+                      <option value="">Select Category</option>
+                      <option value="pesticide">Pesticide</option>
+                      <option value="insecticide">Insecticide</option>
+                      <option value="herbicide">Herbicide</option>
+                      <option value="fungicide">Fungicide</option>
+                      <option value="equipment">Equipment</option>
+                      <option value="trap">Trap</option>
+                      <option value="bait">Bait</option>
+                      <option value="other">Other</option>
+                    </select>
+                  ) : (
+                    <select
+                      value={formData.service_type}
+                      onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
+                      className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
+                    >
+                      <option value="">Select Category</option>
+                      <option value="inspection">Inspection</option>
+                      <option value="treatment">Treatment</option>
+                      <option value="prevention">Prevention</option>
+                      <option value="consultation">Consultation</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="emergency">Emergency Service</option>
+                      <option value="other">Other</option>
+                    </select>
+                  )}
                 </div>
               </div>
               <div className="pest-dropdown-container">
@@ -515,7 +582,9 @@ export default function CompanyDashboard() {
                 </div>
               </div>
               <div>
-                <label className="block text-white/80 mb-2">Service Image</label>
+                <label className="block text-white/80 mb-2">
+                  {formData.item_type === 'product' ? 'Product' : 'Service'} Image
+                </label>
                 <input
                   type="file"
                   accept="image/*"
@@ -548,11 +617,25 @@ export default function CompanyDashboard() {
                   type="submit"
                   className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium"
                 >
-                  {editingService ? 'Update Service' : 'Create Service'}
+                  {editingService ? 'Update Item' : `Create ${formData.item_type === 'product' ? 'Product' : 'Service'}`}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setEditingService(null);
+                    setFormData({
+                      title: '',
+                      description: '',
+                      price: '',
+                      service_type: '',
+                      item_type: 'service',
+                      pest_types: '',
+                      image: null,
+                    });
+                    setSelectedPests([]);
+                    setImagePreview(null);
+                  }}
                   className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-medium"
                 >
                   Cancel

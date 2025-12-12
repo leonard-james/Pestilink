@@ -252,10 +252,10 @@ export default function FarmerDashboard() {
             </div>
           )}
 
-          {/* My Orders */}
+          {/* My Bookings */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">My Order(s)</h2>
+              <h2 className="text-2xl font-bold">My Bookings</h2>
               <button
                 onClick={fetchBookings}
                 className="text-sm text-emerald-300 hover:text-emerald-200"
@@ -306,17 +306,17 @@ export default function FarmerDashboard() {
               </div>
             ) : (
               <div className="text-center text-white/70 py-8 bg-white/5 rounded-xl border border-white/10">
-                You have no orders yet. Find a service and order from the services page.
+                You have no bookings yet. Find a service and book from the services page.
               </div>
             )}
           </div>
 
-          {/* Available Products */}
+          {/* Available Services */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Available Products</h2>
+              <h2 className="text-2xl font-bold">Available Services</h2>
               <button
-                onClick={() => router.push('/products')}
+                onClick={() => router.push('/services')}
                 className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
               >
                 View All →
@@ -325,7 +325,7 @@ export default function FarmerDashboard() {
             {loading ? (
               <div className="text-center text-white/80 py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                <p className="mt-2">Loading products...</p>
+                <p className="mt-2">Loading services...</p>
               </div>
             ) : services.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -359,7 +359,7 @@ export default function FarmerDashboard() {
                       )}
                     </div>
                     <button
-                      onClick={() => router.push(`/products`)}
+                      onClick={() => router.push(`/services`)}
                       className="w-full bg-[#0b2036] text-white py-2.5 rounded-lg hover:bg-[#12293b] text-center font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       ORDER NOW
@@ -372,8 +372,8 @@ export default function FarmerDashboard() {
                 <svg className="w-16 h-16 mx-auto mb-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
-                <p className="text-lg mb-2">No products available yet</p>
-                <p className="text-sm text-white/60">Check back soon for pest control products in your area</p>
+                <p className="text-lg mb-2">No services available yet</p>
+                <p className="text-sm text-white/60">Check back soon for pest control services in your area</p>
               </div>
             )}
           </div>
