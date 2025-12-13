@@ -7,6 +7,100 @@ import DashboardSidebar from '../../components/DashboardSidebar';
 import Footer from '../../components/Footer';
 import { completePestData, getPestImages, type PestData } from './complete-data';
 
+interface FullscreenImageProps {
+  images: string[];
+  initialIndex: number;
+  onClose: () => void;
+}
+
+const FullscreenImageViewer = ({ images, initialIndex, onClose }: FullscreenImageProps) => {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+  const goToNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
+  const goToPrevious = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowRight') {
+        goToNext();
+      } else if (e.key === 'ArrowLeft') {
+        goToPrevious();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4">
+      <button 
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl z-10"
+        aria-label="Close"
+      >
+        ✕
+      </button>
+      
+      <div className="relative w-full h-full flex items-center justify-center">
+        <button 
+          onClick={goToPrevious}
+          className="absolute left-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 z-10"
+          aria-label="Previous image"
+        >
+          ❮
+        </button>
+        
+        <div className="w-full h-full flex items-center justify-center p-4">
+          <div className="relative" style={{ minWidth: 'min(100%, 800px)', minHeight: 'min(80vh, 600px)' }}>
+            <img 
+              src={images[currentIndex]} 
+              alt={`Pest image ${currentIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+              style={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '100%',
+                maxHeight: '90vh',
+                minWidth: 'min(100%, 600px)',
+                minHeight: 'min(80vh, 500px)',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
+        </div>
+        
+        <button 
+          onClick={goToNext}
+          className="absolute right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 z-10"
+          aria-label="Next image"
+        >
+          ❯
+        </button>
+      </div>
+      
+      <div className="absolute bottom-4 flex gap-2">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-3 h-3 rounded-full ${currentIndex === index ? 'bg-white' : 'bg-gray-500'}`}
+            aria-label={`Go to image ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 interface Service {
   id: number;
   title: string;
@@ -28,6 +122,7 @@ export default function PestPage({ slug }: { slug: string }) {
   const [loadingServices, setLoadingServices] = useState(false);
   const [pestImages, setPestImages] = useState<string[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -49,10 +144,15 @@ export default function PestPage({ slug }: { slug: string }) {
       const res = await fetch(`${apiBase}/api/services/suggest?pest=${encodeURIComponent(pestName)}`);
       if (res.ok) {
         const data = await res.json();
-        setServices(data.services || []);
+        // The API returns the services array directly, not wrapped in a 'services' property
+        setServices(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Error response:', await res.text());
+        setServices([]);
       }
     } catch (err) {
       console.error('Error loading services', err);
+      setServices([]);
     } finally {
       setLoadingServices(false);
     }
@@ -109,14 +209,27 @@ export default function PestPage({ slug }: { slug: string }) {
                 <p className="text-white/80 leading-relaxed">{pest.description}</p>
               </div>
               <div className="md:w-96 w-full">
-                <div className="relative w-full h-64 rounded-lg overflow-hidden border border-white/10 mb-4 bg-white/5 flex items-center justify-center">
+                <div className="relative w-full h-64 rounded-lg overflow-hidden border border-white/10 mb-4 bg-white/5 flex items-center justify-center group">
                   {pestImages.length > 0 ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={pestImages[selectedImageIndex]}
-                      alt={pest.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={pestImages[selectedImageIndex]}
+                        alt={pest.name}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => setIsFullscreen(true)}
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsFullscreen(true);
+                          }}
+                          className="px-3 py-1 bg-white/90 text-black rounded-full text-sm font-medium hover:bg-white transition-colors"
+                        >
+                          View Fullscreen
+                        </button>
+                      </div>
+                    </>
                   ) : (
                     <div className="text-6xl">{pest.image}</div>
                   )}
@@ -125,7 +238,7 @@ export default function PestPage({ slug }: { slug: string }) {
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {pestImages.map((img, idx) => (
                       <button
-                        key={img}
+                        key={`${img}-${idx}`}
                         onClick={() => setSelectedImageIndex(idx)}
                         className={`flex-shrink-0 w-16 h-16 rounded border-2 overflow-hidden transition ${
                           selectedImageIndex === idx ? 'border-emerald-400' : 'border-white/20 hover:border-white/40'
@@ -139,6 +252,101 @@ export default function PestPage({ slug }: { slug: string }) {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Services Section */}
+          <div className="bg-emerald-900/20 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-emerald-500/20">
+            <h2 className="text-2xl font-bold mb-6">Available Services for {pest.name}</h2>
+            
+            {loadingServices ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white/5 rounded-lg p-4 animate-pulse">
+                    <div className="h-6 bg-white/10 rounded w-3/4 mb-4"></div>
+                    <div className="h-4 bg-white/10 rounded w-1/2 mb-2"></div>
+                    <div className="h-3 bg-white/10 rounded w-full mb-3"></div>
+                    <div className="h-3 bg-white/10 rounded w-5/6 mb-4"></div>
+                    <div className="h-10 bg-white/10 rounded w-full"></div>
+                  </div>
+                ))}
+              </div>
+            ) : services.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {services.map((service) => (
+                  <div 
+                    key={service.id} 
+                    className="bg-white/5 rounded-lg overflow-hidden border border-white/10 hover:border-emerald-400/50 transition-colors cursor-pointer group"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (service?.id) {
+                        router.push(`/services`);
+                      } else {
+                        console.error('Service ID is missing');
+                      }
+                    }}
+                  >
+                    <div className="h-40 bg-white/5 relative overflow-hidden">
+                      {service.image ? (
+                        <Image
+                          src={service.image}
+                          alt={service.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white/30">
+                          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-lg font-semibold text-white group-hover:text-emerald-300 transition-colors">
+                          {service.title}
+                        </h3>
+                        {service.price !== null && (
+                          <span className="bg-emerald-500/20 text-emerald-300 text-sm font-medium px-2 py-1 rounded">
+                            ₱{service.price.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-white/70 mb-3 line-clamp-2">
+                        {service.description}
+                      </p>
+                      <div className="flex items-center text-sm text-white/60">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <span>{service.company_name}</span>
+                      </div>
+                      <button 
+                        className="mt-4 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-colors text-sm font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (service?.id) {
+                            router.push(`/services`);
+                          } else {
+                            console.error('Service ID is missing');
+                          }
+                        }}
+                      >
+                        View Details & Avail
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <svg className="mx-auto h-12 w-12 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="mt-2 text-lg font-medium text-white">No services available</h3>
+                <p className="mt-1 text-white/60">We couldn't find any services for {pest.name}.</p>
+              </div>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -189,6 +397,14 @@ export default function PestPage({ slug }: { slug: string }) {
       <div className="relative z-10">
         <Footer />
       </div>
+
+      {isFullscreen && pestImages.length > 0 && (
+        <FullscreenImageViewer 
+          images={pestImages}
+          initialIndex={selectedImageIndex}
+          onClose={() => setIsFullscreen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -89,15 +89,22 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto pr-4 sm:pr-6 lg:pr-8">
           <nav className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="h-10 w-10 rounded-md bg-gradient-to-br from-emerald-500 to-lime-400 flex items-center justify-center font-bold text-black">
-                X
-              </div>
+            <div className="flex items-center -ml-6">
+              <img 
+                src="/logo.png"
+                alt="Pest Link Logo" 
+                className="h-20 w-20 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  console.error('Failed to load logo:', target.src);
+                  target.src = '/logo.png';
+                }}
+              />
               <div className="ml-2">
-                <span className="text-lg font-bold text-white">PEST LINK</span>
+                <span className="text-xl font-bold text-white">PEST LINK</span>
               </div>
             </div>
 

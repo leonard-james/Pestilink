@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { getAllPestNames } from '../../pest-services/pests/complete-data';
+import ServiceModal from '../../components/ServiceModal';
 
 interface Service {
   id: number;
@@ -41,21 +42,67 @@ export default function CompanyDashboard() {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    service_type: '',
-    item_type: 'service' as 'service' | 'product',
-    pest_types: '',
-    image: null as File | null,
-  });
-  const [selectedPests, setSelectedPests] = useState<string[]>([]);
-  const [pestSearchQuery, setPestSearchQuery] = useState('');
-  const [showPestDropdown, setShowPestDropdown] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const allPestNames = getAllPestNames();
+
+  const handleAddService = () => {
+    setEditingService(null);
+    setShowAddModal(true);
+  };
+
+  const handleEditService = (service: Service) => {
+    setEditingService(service);
+    setShowAddModal(true);
+  };
+
+  const handleServiceSubmit = async (formData: any) => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setErrorMsg('No authentication token found. Please log in again.');
+      return false;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('price', formData.price || '0');
+    formDataToSend.append('service_type', formData.service_type);
+    formDataToSend.append('pest_types', formData.pest_types);
+    
+    if (formData.image) {
+      formDataToSend.append('image', formData.image);
+    }
+
+    try {
+      const url = editingService 
+        ? `${getApiBase()}/api/company/services/${editingService.id}`
+        : `${getApiBase()}/api/company/services`;
+      
+      const method = editingService ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formDataToSend,
+      });
+
+      if (response.ok) {
+        setShowAddModal(false);
+        setEditingService(null);
+        fetchServices();
+        return true;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save service');
+      }
+    } catch (error) {
+      console.error('Error saving service:', error);
+      setErrorMsg(error instanceof Error ? error.message : 'Failed to save service');
+      return false;
+    }
+  };
 
   useEffect(() => {
     fetchServices();
@@ -130,65 +177,6 @@ export default function CompanyDashboard() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    try {
-      const token = localStorage.getItem('authToken');
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price || '0');
-      formDataToSend.append('service_type', formData.item_type === 'product' ? 'product' : formData.service_type);
-      // Use selectedPests if available, otherwise fall back to pest_types input
-      const pestsToSend = selectedPests.length > 0 ? selectedPests.join(', ') : formData.pest_types;
-      formDataToSend.append('pest_types', pestsToSend);
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
-
-      const method = editingService ? 'PUT' : 'POST';
-      const url = editingService 
-        ? `${getApiBase()}/api/company/services/${editingService.id}`
-        : `${getApiBase()}/api/company/services`;
-
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
-
-      if (response.ok) {
-        setShowAddModal(false);
-        setEditingService(null);
-        setFormData({
-          title: '',
-          description: '',
-          price: '',
-          service_type: '',
-          item_type: 'service',
-          pest_types: '',
-          image: null,
-        });
-        setSelectedPests([]);
-        setImagePreview(null);
-        setErrorMsg(null);
-        fetchServices();
-      } else {
-        // Try to parse error
-        let error = 'Failed to create service';
-        try {
-          const json = await response.json();
-          error = json?.message || JSON.stringify(json);
-        } catch {}
-        setErrorMsg(error);
-      }
-    } catch (error: any) {
-      setErrorMsg(error?.message ?? 'Unknown error');
-    }
-  };
 
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col relative">
@@ -212,7 +200,7 @@ export default function CompanyDashboard() {
               <p className="text-white/80">Manage your services and reach more farmers.</p>
             </div>
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={handleAddService}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium"
             >
               + Add Service/Product
@@ -260,21 +248,7 @@ export default function CompanyDashboard() {
                     </div>
                     <div className="flex gap-2">
                       <button 
-                        onClick={() => {
-                          setEditingService(service);
-                          setFormData({
-                            title: service.title,
-                            description: service.description,
-                            price: service.price?.toString() || '',
-                            service_type: service.service_type || '',
-                            item_type: (service.service_type === 'product' ? 'product' : 'service') as 'service' | 'product',
-                            pest_types: Array.isArray(service.pest_types) ? service.pest_types.join(', ') : '',
-                            image: null,
-                          });
-                          setSelectedPests(Array.isArray(service.pest_types) ? service.pest_types : []);
-                          setImagePreview(service.image);
-                          setShowAddModal(true);
-                        }}
+                        onClick={() => handleEditService(service)}
                         className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-center font-medium text-sm transition"
                       >
                         EDIT
@@ -390,266 +364,21 @@ export default function CompanyDashboard() {
         </div>
       </main>
 
-      {/* Add Service Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60" onClick={() => {
-            setShowAddModal(false);
-            setEditingService(null);
-            setFormData({
-              title: '',
-              description: '',
-              price: '',
-              service_type: '',
-              item_type: 'service',
-              pest_types: '',
-              image: null,
-            });
-            setSelectedPests([]);
-            setImagePreview(null);
-          }} />
-          <div className="relative bg-gray-900 w-full max-w-2xl rounded-xl p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">{editingService ? 'Edit Service/Product' : 'Add New Service/Product'}</h2>
-            <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => {
-              // Close dropdown when clicking outside
-              if ((e.target as HTMLElement).closest('.pest-dropdown-container') === null) {
-                setShowPestDropdown(false);
-              }
-            }}>
-              <div>
-                <label className="block text-white/80 mb-2">Item Type</label>
-                <select
-                  value={formData.item_type}
-                  onChange={(e) => setFormData({ ...formData, item_type: e.target.value as 'service' | 'product' })}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                >
-                  <option value="service">Service</option>
-                  <option value="product">Product</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-white/80 mb-2">
-                  {formData.item_type === 'product' ? 'Product' : 'Service'} Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                />
-              </div>
-              <div>
-                <label className="block text-white/80 mb-2">Description</label>
-                <textarea
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                  rows={4}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-white/80 mb-2">Price</label>
-                  <input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-white/80 mb-2">
-                    {formData.item_type === 'product' ? 'Product Category' : 'Service Category'}
-                  </label>
-                  {formData.item_type === 'product' ? (
-                    <select
-                      value={formData.service_type}
-                      onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
-                      className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                    >
-                      <option value="">Select Category</option>
-                      <option value="pesticide">Pesticide</option>
-                      <option value="insecticide">Insecticide</option>
-                      <option value="herbicide">Herbicide</option>
-                      <option value="fungicide">Fungicide</option>
-                      <option value="equipment">Equipment</option>
-                      <option value="trap">Trap</option>
-                      <option value="bait">Bait</option>
-                      <option value="other">Other</option>
-                    </select>
-                  ) : (
-                    <select
-                      value={formData.service_type}
-                      onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
-                      className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                    >
-                      <option value="">Select Category</option>
-                      <option value="inspection">Inspection</option>
-                      <option value="treatment">Treatment</option>
-                      <option value="prevention">Prevention</option>
-                      <option value="consultation">Consultation</option>
-                      <option value="maintenance">Maintenance</option>
-                      <option value="emergency">Emergency Service</option>
-                      <option value="other">Other</option>
-                    </select>
-                  )}
-                </div>
-              </div>
-              <div className="pest-dropdown-container">
-                <label className="block text-white/80 mb-2">Target Pests</label>
-                <div className="relative">
-                  <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 bg-white/10 rounded-lg border border-white/20">
-                    {selectedPests.length > 0 ? (
-                      selectedPests.map((pest) => (
-                        <span
-                          key={pest}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 text-white rounded-full text-sm"
-                        >
-                          {pest}
-                          <button
-                            type="button"
-                            onClick={() => setSelectedPests(selectedPests.filter(p => p !== pest))}
-                            className="hover:text-red-300"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-white/50 text-sm">No pests selected</span>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={pestSearchQuery}
-                      onChange={(e) => {
-                        setPestSearchQuery(e.target.value);
-                        setShowPestDropdown(true);
-                      }}
-                      onFocus={() => setShowPestDropdown(true)}
-                      placeholder="Search and select pests..."
-                      className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                    />
-                    {showPestDropdown && (
-                      <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto bg-gray-800 border border-white/20 rounded-lg shadow-lg">
-                        {allPestNames
-                          .filter(pest => 
-                            pest.toLowerCase().includes(pestSearchQuery.toLowerCase()) &&
-                            !selectedPests.includes(pest)
-                          )
-                          .map((pest) => (
-                            <button
-                              key={pest}
-                              type="button"
-                              onClick={() => {
-                                if (!selectedPests.includes(pest)) {
-                                  setSelectedPests([...selectedPests, pest]);
-                                }
-                                setPestSearchQuery('');
-                                setShowPestDropdown(false);
-                              }}
-                              className="w-full text-left px-4 py-2 hover:bg-emerald-600/30 text-white text-sm"
-                            >
-                              {pest}
-                            </button>
-                          ))}
-                        {allPestNames.filter(pest => 
-                          pest.toLowerCase().includes(pestSearchQuery.toLowerCase()) &&
-                          !selectedPests.includes(pest)
-                        ).length === 0 && (
-                          <div className="px-4 py-2 text-white/50 text-sm">No pests found</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-white/60 mt-1">
-                    Selected: {selectedPests.length} pest{selectedPests.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                {/* Keep the old input as fallback */}
-                <div className="mt-2">
-                  <label className="block text-white/60 mb-1 text-xs">Or enter manually (comma-separated)</label>
-                  <input
-                    type="text"
-                    value={formData.pest_types}
-                    onChange={(e) => setFormData({ ...formData, pest_types: e.target.value })}
-                    placeholder="e.g., Ants, Cockroaches, Termites"
-                    className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-white/80 mb-2">
-                  {formData.item_type === 'product' ? 'Product' : 'Service'} Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setFormData({ ...formData, image: file });
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setImagePreview(reader.result as string);
-                      };
-                      reader.readAsDataURL(file);
-                    } else {
-                      setImagePreview(null);
-                    }
-                  }}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20"
-                />
-                {imagePreview && (
-                  <img src={imagePreview} alt="Preview" className="mt-4 rounded-lg max-h-48 mx-auto" />
-                )}
-              </div>
-              {errorMsg && (
-                <div className="my-2 py-2 px-4 bg-red-700 text-white rounded-lg text-center">
-                  {errorMsg}
-                </div>
-              )}
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium"
-                >
-                  {editingService ? 'Update Item' : `Create ${formData.item_type === 'product' ? 'Product' : 'Service'}`}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditingService(null);
-                    setFormData({
-                      title: '',
-                      description: '',
-                      price: '',
-                      service_type: '',
-                      item_type: 'service',
-                      pest_types: '',
-                      image: null,
-                    });
-                    setSelectedPests([]);
-                    setImagePreview(null);
-                  }}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-medium"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
+      <ServiceModal
+        isOpen={showAddModal}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingService(null);
+          setErrorMsg(null);
+        }}
+        onSubmit={handleServiceSubmit}
+        service={editingService}
+      />
+      {errorMsg && (
+        <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg">
+          {errorMsg}
         </div>
       )}
-
-      <div className="relative z-10">
-        <Footer />
-      </div>
     </div>
   );
 }
-

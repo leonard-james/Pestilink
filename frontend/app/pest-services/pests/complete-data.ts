@@ -24,17 +24,18 @@ const pestImages: Record<string, string[]> = {
     'Periplaneta-americana – American-cockroach – Kuwagong-amerikano4.jpg'
   ],
   'Aphid': [
-    'Aphid – Aphid – Dapulak.jpg',
-    'Aphid – Aphid – Dapulak1.jpg',
-    'Aphid – Aphid – Dapulak2.jpg',
-    'Aphid – Aphid – Dapulak3.jpg',
-    'Aphid – Aphid – Dapulak4.jpg'
+    'Aphis-gossypii – Cotton-aphid – Apid.jpg',
+    'Aphis-gossypii – Cotton-aphid – Apid1.jpg',
+    'Aphis-gossypii – Cotton-aphid – Apid2.jpg',
+    'Aphis-gossypii – Cotton-aphid – Apid3.jpg',
+    'Aphis-gossypii – Cotton-aphid – Apid4.jpg'
   ],
   'Apple Snail': [
-    'Pomacea-canaliculata – Apple-snail – Kuhol.jpg',
-    'Pomacea-canaliculata – Apple-snail – Kuhol1.jpg',
-    'Pomacea-canaliculata – Apple-snail – Kuhol2.jpg',
-    'Pomacea-canaliculata – Apple-snail – Kuhol3.jpg'
+    'Golden-apple-snail.jpg',
+    'Golden-apple-snail1.jpg',
+    'Golden-apple-snail2.jpg',
+    'Golden-apple-snail3.jpg',
+    'Golden-apple-snail4.jpg'
   ],
   'ArmyWorm': [
     'Spodoptera-litura – Armyworm – Utok-ng-gulay.jpg',
@@ -45,9 +46,12 @@ const pestImages: Record<string, string[]> = {
     'Spodoptera-litura – Armyworm – Utok-ng-gulay5.jpg'
   ],
   'Bed Bug': [
-    'Cimex-lectularius – Bed-bug – Aninong-dilig.jpg',
+    'Cimex-lectularius – Bed-bug.avif',
+    'Cimex-lectularius – Bed-bug.jpg',
+    'Cimex-lectularius – Bed-bug1.jpg',
     'Cimex-lectularius – Bed-bug – Aninong-dilig2.jpg',
     'Cimex-lectularius – Bed-bug – Aninong-dilig3.jpg',
+    'Cimex-lectularius – Bed-bug – Aninong-dilig4.jpg',
     'Cimex-lectularius – Bed-bug – Aninong-dilig4.jpg',
     'Cimex-lectularius – Bed-bug.avif',
     'Cimex-lectularius – Bed-bug1.jpg'
@@ -59,50 +63,62 @@ const pestImages: Record<string, string[]> = {
     'Nephotettix-virescens – Green-leafhopper – Bubuyo3.jpg',
     'Nephotettix-virescens – Green-leafhopper – Bubuyo4.jpg'
   ],
-  'Brown Plant Hopper': [
-    'Nilaparvata-lugens – Brown-plant-hopper – Kayumangging-dahon.jpg',
-    'Nilaparvata-lugens – Brown-plant-hopper – Kayumangging-dahon1.jpg',
-    'Nilaparvata-lugens – Brown-plant-hopper – Kayumangging-dahon2.jpg'
-  ],
   'Carpenter Ant': [
-    'Camponotus-pennsylvanicus – Carpenter-ant – Langgam-karpintero.jpg',
-    'Camponotus-pennsylvanicus – Carpenter-ant – Langgam-karpintero1.jpg',
-    'Camponotus-pennsylvanicus – Carpenter-ant – Langgam-karpintero2.jpg'
+    'Camponotus-spp – Carpenter-ant – Langgam.jpg',
+    'Camponotus-spp – Carpenter-ant – Langgam1.jpg',
+    'Camponotus-spp – Carpenter-ant – Langgam2.jpg',
+    'Camponotus-spp – Carpenter-ant – Langgam3.jpg',
+    'Camponotus-spp – Carpenter-ant – Langgam4.jpg'
   ],
   'Coconut Rhinoceros': [
-    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – U-ok.jpg',
-    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – U-ok1.jpg',
-    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – U-ok2.jpg'
+    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – Utok-ng-niyog.jpg',
+    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – Utok-ng-niyog1.jpg',
+    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – Utok-ng-niyog2.jpg',
+    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – Utok-ng-niyog3.jpg',
+    'Oryctes-rhinoceros – Coconut-rhinoceros-beetle – Utok-ng-niyog4.jpg'
   ],
   'Colorado Potato Beetle': [
-    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Salagubang-patatas.jpg',
-    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Salagubang-patatas1.jpg',
-    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Salagubang-patatas2.jpg'
+    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Utok-ng-patatas.jpg',
+    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Utok-ng-patatas1.jpg',
+    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Utok-ng-patatas2.jpg',
+    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Utok-ng-patatas3.jpg',
+    'Leptinotarsa-decemlineata – Colorado-potato-beetle – Utok-ng-patatas4.jpg'
   ],
   'Corn Root Worm': [
-    'Diabrotica-virgifera – Corn-rootworm – Uod-ng-ugat-ng-mais.jpg',
-    'Diabrotica-virgifera – Corn-rootworm – Uod-ng-ugat-ng-mais1.jpg',
-    'Diabrotica-virgifera – Corn-rootworm – Uod-ng-ugat-ng-mais2.jpg'
+    'Diabrotica-spp – Corn-rootworm – Utok-ng-mais.jpg',
+    'Diabrotica-spp – Corn-rootworm – Utok-ng-mais2.jpg',
+    'Diabrotica-spp – Corn-rootworm – Utok-ng-mais3.jpg',
+    'Diabrotica-spp – Corn-rootworm – Utok-ng-mais4.jpg',
+    'Diabrotica-spp – Corn-rootworm – Utok-ng-mais5.jpg',
+    'Diabrotica-spp – Corn-rootworm – Utok-ng-mais6.jpg'
   ],
-  'Diamond Back Moth': [
-    'Plutella-xylostella – Diamondback-moth – Gamugamo.jpg',
-    'Plutella-xylostella – Diamondback-moth – Gamugamo1.jpg',
-    'Plutella-xylostella – Diamondback-moth – Gamugamo2.jpg'
+  'Diamondback Moth': [
+    'Plutella-xylostella – Diamondback-moth – Utok-ng-repolyo.jpg',
+    'Plutella-xylostella – Diamondback-moth – Utok-ng-repolyo1.jpg',
+    'Plutella-xylostella – Diamondback-moth – Utok-ng-repolyo2.jpg',
+    'Plutella-xylostella – Diamondback-moth – Utok-ng-repolyo3.jpg',
+    'Plutella-xylostella – Diamondback-moth – Utok-ng-repolyo4.jpg'
   ],
   'Fire-Ant': [
-    'Solenopsis-invicta – Fire-ant – Langgam-apoy.jpg',
-    'Solenopsis-invicta – Fire-ant – Langgam-apoy1.jpg',
-    'Solenopsis-invicta – Fire-ant – Langgam-apoy2.jpg'
+    'Solenopsis-spp – Fire-ant – Apoy-langgam.jpg',
+    'Solenopsis-spp – Fire-ant – Apoy-langgam1.jpg',
+    'Solenopsis-spp – Fire-ant – Apoy-langgam2.jpg',
+    'Solenopsis-spp – Fire-ant – Apoy-langgam3.jpg',
+    'Solenopsis-spp – Fire-ant – Apoy-langgam4.jpg'
   ],
   'Garden-snail': [
-    'Cornu-aspersum – Garden-snail – Suso-sa-hardin.jpg',
-    'Cornu-aspersum – Garden-snail – Suso-sa-hardin1.jpg',
-    'Cornu-aspersum – Garden-snail – Suso-sa-hardin2.jpg'
+    'Garden-snail.jpg',
+    'Garden-snail1.jpg',
+    'Garden-snail2.jpg',
+    'Garden-snail3.jpg',
+    'Garden-snail4.jpg'
   ],
   'German Cockroach': [
-    'Blattella-germanica – German-cockroach – Ipis-aleman.jpg',
-    'Blattella-germanica – German-cockroach – Ipis-aleman1.jpg',
-    'Blattella-germanica – German-cockroach – Ipis-aleman2.jpg'
+    'Blattella-germanica – German-cockroach – Kuwagong-german.jpg',
+    'Blattella-germanica – German-cockroach – Kuwagong-german1.jpg',
+    'Blattella-germanica – German-cockroach – Kuwagong-german2.jpg',
+    'Blattella-germanica – German-cockroach – Kuwagong-german3.jpg',
+    'Blattella-germanica – German-cockroach – Kuwagong-german4.jpg'
   ],
   'House Fly': [
     'Musca-domestica – House-fly – Langaw.jpg',
@@ -110,19 +126,25 @@ const pestImages: Record<string, string[]> = {
     'Musca-domestica – House-fly – Langaw2.jpg'
   ],
   'Mango Leaf Hopper': [
-    'Idioscopus-niveosparsus – Mango-leafhopper – Dapulak-ng-mangga.jpg',
-    'Idioscopus-niveosparsus – Mango-leafhopper – Dapulak-ng-mangga1.jpg',
-    'Idioscopus-niveosparsus – Mango-leafhopper – Dapulak-ng-mangga2.jpg'
+    'Idioscopus-spp – Mango-leafhopper – Utok-ng-mangga.jpg',
+    'Idioscopus-spp – Mango-leafhopper – Utok-ng-mangga1.jpg',
+    'Idioscopus-spp – Mango-leafhopper – Utok-ng-mangga2.jpg',
+    'Idioscopus-spp – Mango-leafhopper – Utok-ng-mangga3.jpg',
+    'Idioscopus-spp – Mango-leafhopper – Utok-ng-mangga4.jpg'
   ],
   'Mosquito': [
-    'Aedes-aegypti – Mosquito – Lamok.jpg',
-    'Aedes-aegypti – Mosquito – Lamok1.jpg',
-    'Aedes-aegypti – Mosquito – Lamok2.jpg'
+    'Culex-spp – Mosquito – Lamok.jpg',
+    'Culex-spp – Mosquito – Lamok1.jpg',
+    'Culex-spp – Mosquito – Lamok2.jpg',
+    'Culex-spp – Mosquito – Lamok3.jpg',
+    'Culex-spp – Mosquito – Lamok4.jpg'
   ],
   'Red Flour beetle': [
-    'Tribolium-castaneum – Red-flour-beetle – Salagubang-pulang-harina.jpg',
-    'Tribolium-castaneum – Red-flour-beetle – Salagubang-pulang-harina1.jpg',
-    'Tribolium-castaneum – Red-flour-beetle – Salagubang-pulang-harina2.jpg'
+    'ribolium-castaneum – Red-flour-beetle – Utok-ng-harina.jpg',
+    'ribolium-castaneum – Red-flour-beetle – Utok-ng-harina1.jpg',
+    'ribolium-castaneum – Red-flour-beetle – Utok-ng-harina2.jpg',
+    'ribolium-castaneum – Red-flour-beetle – Utok-ng-harina3.jpg',
+    'ribolium-castaneum – Red-flour-beetle – Utok-ng-harina4.png'
   ],
   'Rice Bug': [
     'Leptocorisa-acuta – Rice-bug – Katutubong-tipaklong.avif',
@@ -133,54 +155,76 @@ const pestImages: Record<string, string[]> = {
     'Leptocorisa-acuta – Rice-bug – Katutubong-tipaklong4.jpg'
   ],
   'Rice Gall': [
-    'Orseolia-oryzae – Rice-gall-midge – Uok-ng-palay.jpg',
-    'Orseolia-oryzae – Rice-gall-midge – Uok-ng-palay1.jpg',
-    'Orseolia-oryzae – Rice-gall-midge – Uok-ng-palay2.jpg'
+    'Orseolia-oryzae – Rice-gall-midge – Tipaklong-ng-palay.jpg',
+    'Orseolia-oryzae – Rice-gall-midge – Tipaklong-ng-palay1.jpg',
+    'Orseolia-oryzae – Rice-gall-midge – Tipaklong-ng-palay2.jpg',
+    'Orseolia-oryzae – Rice-gall-midge – Tipaklong-ng-palay3.jpg',
+    'Orseolia-oryzae – Rice-gall-midge – Tipaklong-ng-palay4.jpg'
   ],
   'Rice Leaf Folder': [
-    'Cnaphalocrocis-medinalis – Rice-leaffolder – Tagapag-balot-ng-dahon-ng-palay.jpg',
-    'Cnaphalocrocis-medinalis – Rice-leaffolder – Tagapag-balot-ng-dahon-ng-palay1.jpg',
-    'Cnaphalocrocis-medinalis – Rice-leaffolder – Tagapag-balot-ng-dahon-ng-palay2.jpg'
+    'Cnaphalocrocis-medinalis – Rice-leaf-folder – Tipaklong-ng-palay.jpg',
+    'Cnaphalocrocis-medinalis – Rice-leaf-folder – Tipaklong-ng-palay1.jpg',
+    'Cnaphalocrocis-medinalis – Rice-leaf-folder – Tipaklong-ng-palay2.jpg',
+    'Cnaphalocrocis-medinalis – Rice-leaf-folder – Tipaklong-ng-palay3.jpg',
+    'Cnaphalocrocis-medinalis – Rice-leaf-folder – Tipaklong-ng-palay4.jpg'
   ],
   'Rice Water Weevil': [
-    'Lissorhoptrus-oryzophilus – Rice-water-weevil – Bukbok-ng-tubig-ng-palay.jpg',
-    'Lissorhoptrus-oryzophilus – Rice-water-weevil – Bukbok-ng-tubig-ng-palay1.jpg',
-    'Lissorhoptrus-oryzophilus – Rice-water-weevil – Bukbok-ng-tubig-ng-palay2.jpg'
+    'Hydrellia-philippina – Rice-water-weevil – Gamugamo.jpg',
+    'Hydrellia-philippina – Rice-water-weevil – Gamugamo1.jpg',
+    'Hydrellia-philippina – Rice-water-weevil – Gamugamo2.jpg',
+    'Hydrellia-philippina – Rice-water-weevil – Gamugamo3.jpg',
+    'Hydrellia-philippina – Rice-water-weevil – Gamugamo4.jpg'
   ],
   'Rice Weevil': [
-    'Sitophilus-oryzae – Rice-weevil – Bukbok-ng-palay.jpg',
-    'Sitophilus-oryzae – Rice-weevil – Bukbok-ng-palay1.jpg',
-    'Sitophilus-oryzae – Rice-weevil – Bukbok-ng-palay2.jpg'
+    'Sitophilus-oryzae – Rice-weevil – Utok-ng-bigas.jpg',
+    'Sitophilus-oryzae – Rice-weevil – Utok-ng-bigas1.jpg',
+    'Sitophilus-oryzae – Rice-weevil – Utok-ng-bigas2.jpg',
+    'Sitophilus-oryzae – Rice-weevil – Utok-ng-bigas3.jpg',
+    'Sitophilus-oryzae – Rice-weevil – Utok-ng-bigas4.jpg',
+    'Sitophilus-oryzae – Rice-weevil – Utok-ng-2.jpg'
   ],
   'SilverLeaf WhiteFly': [
-    'Bemisia-tabaci – Silverleaf-whitefly – Puting-dapulak.jpg',
-    'Bemisia-tabaci – Silverleaf-whitefly – Puting-dapulak1.jpg',
-    'Bemisia-tabaci – Silverleaf-whitefly – Puting-dapulak2.jpg'
+    'Bemisia-tabaci – Silverleaf-whitefly – Puting-langaw.jpg',
+    'Bemisia-tabaci – Silverleaf-whitefly – Puting-langaw1.jpg',
+    'Bemisia-tabaci – Silverleaf-whitefly – Puting-langaw2.jpg',
+    'Bemisia-tabaci – Silverleaf-whitefly – Puting-langaw3.jpg',
+    'Bemisia-tabaci – Silverleaf-whitefly – Puting-langaw4.jpg'
   ],
   'Stripe Rice Stem Borer': [
-    'Chilo-supressalis – Striped-stem-borer – Uod-ng-uhay-ng-palay.jpg',
-    'Chilo-supressalis – Striped-stem-borer – Uod-ng-uhay-ng-palay1.jpg',
-    'Chilo-supressalis – Striped-stem-borer – Uod-ng-uhay-ng-palay2.jpg'
+    'Chilo-suppressalis – Striped-rice-stem-borer – Utok.jpg',
+    'Chilo-suppressalis – Striped-rice-stem-borer – Utok1.jpg',
+    'Chilo-suppressalis – Striped-rice-stem-borer – Utok2.jpg',
+    'Chilo-suppressalis – Striped-rice-stem-borer – Utok3.jpg',
+    'Chilo-suppressalis – Striped-rice-stem-borer – Utok4.jpg'
   ],
   'Tea Mosquito Bug': [
-    'Helopeltis-theivora – Tea-mosquito-bug – Munting-surot-ng-tsaa.jpg',
-    'Helopeltis-theivora – Tea-mosquito-bug – Munting-surot-ng-tsaa1.jpg',
-    'Helopeltis-theivora – Tea-mosquito-bug – Munting-surot-ng-tsaa2.jpg'
+    'Helopeltis-spp – Tea-mosquito-bug – Utok-ng-tsaa.jpg',
+    'Helopeltis-spp – Tea-mosquito-bug – Utok-ng-tsaa1.jpg',
+    'Helopeltis-spp – Tea-mosquito-bug – Utok-ng-tsaa2.jpg',
+    'Helopeltis-spp – Tea-mosquito-bug – Utok-ng-tsaa3.jpg',
+    'Helopeltis-spp – Tea-mosquito-bug – Utok-ng-tsaa4.jpg'
   ],
   'Termite': [
-    'Coptotermes-gestroi – Termite – Anay.jpg',
-    'Coptotermes-gestroi – Termite – Anay1.jpg',
-    'Coptotermes-gestroi – Termite – Anay2.jpg'
+    'Termes-spp – Termite – Alipunga.jpg',
+    'Termes-spp – Termite – Alipunga1.jpg',
+    'Termes-spp – Termite – Alipunga2.jpg',
+    'Termes-spp – Termite – Alipunga3.jpg',
+    'Termes-spp – Termite – Alipunga4.jpg'
   ],
   'Tomato Fruit Borer': [
-    'Helicoverpa-armigera – Tomato-fruit-borer – Uod-ng-bunga-ng-kamatis.jpg',
-    'Helicoverpa-armigera – Tomato-fruit-borer – Uod-ng-bunga-ng-kamatis1.jpg',
-    'Helicoverpa-armigera – Tomato-fruit-borer – Uod-ng-bunga-ng-kamatis2.jpg'
+    'Helicoverpa-armigera – Tomato-fruit-borer – Utok-ng-kamatis.jpg',
+    'Helicoverpa-armigera – Tomato-fruit-borer – Utok-ng-kamatis1.jpg',
+    'Helicoverpa-armigera – Tomato-fruit-borer – Utok-ng-kamatis2.jpg',
+    'Helicoverpa-armigera – Tomato-fruit-borer – Utok-ng-kamatis3.jpg',
+    'Helicoverpa-armigera – Tomato-fruit-borer – Utok-ng-kamatis4.jpg'
   ],
   'Yellow Stem Borer': [
-    'Scirpophaga-incertulas – Yellow-stem-borer – Uod-ng-ugat-ng-palay.jpg',
-    'Scirpophaga-incertulas – Yellow-stem-borer – Uod-ng-ugat-ng-palay1.jpg',
-    'Scirpophaga-incertulas – Yellow-stem-borer – Uod-ng-ugat-ng-palay2.jpg'
+    'Scirpophaga-incertulas – Yellow-stem-borer – Utok.jpg',
+    'Scirpophaga-incertulas – Yellow-stem-borer – Utok1.jpg',
+    'Scirpophaga-incertulas – Yellow-stem-borer – Utok2.jpg',
+    'Scirpophaga-incertulas – Yellow-stem-borer – Utok3.jpg',
+    'Scirpophaga-incertulas – Yellow-stem-borer – Utok4.jpg',
+    'Scirpophaga-incertulas – Yellow-stem-borer – Utok5.jpg'
   ]
 };
 
@@ -353,32 +397,6 @@ export const completePestData: PestData[] = [
     image: getPestImage('Brown Leaf hopper'),
     images: getPestImages('Brown Leaf hopper'),
     folderName: 'Brown Leaf hopper',
-  },
-  {
-    slug: 'brown-leaf-hopper',
-    name: 'Brown Leaf Hopper',
-    description: 'Small wedge-shaped brown insect feeding on rice leaves and stems, vector of rice viruses.',
-    biology: 'Sucks plant sap; populations increase in dense planting; vectors for grassy stunt and ragged stunt viruses.',
-    signs: 'Yellowing, curling leaves, hopperburn, stunted growth.',
-    prevention: 'Proper spacing, weed removal, avoid excessive nitrogen, and resistant varieties.',
-    treatment: 'Insecticide sprays, introduce natural predators like spiders or ladybugs.',
-    diy: 'Spray water mixed with neem oil or chili extract to repel hoppers.',
-    image: getPestImage('Brown Leaf hopper'),
-    images: getPestImages('Brown Leaf hopper'),
-    folderName: 'Brown Leaf hopper',
-  },
-  {
-    slug: 'brown-plant-hopper',
-    name: 'Brown Plant Hopper',
-    description: 'Small brown insect closely related to leaf hoppers; attacks rice stems and leaves.',
-    biology: 'Sucks sap and vectors viruses; multiple generations per season; thrives in high humidity.',
-    signs: 'Hopperburn, yellowing, stunted plants, reduced tillering.',
-    prevention: 'Field sanitation, balanced fertilization, resistant varieties, and remove weeds.',
-    treatment: 'Insecticides, encourage natural predators.',
-    diy: 'Spray garlic extract or neem oil on infested areas to repel hoppers.',
-    image: getPestImage('Brown Plant Hopper'),
-    images: getPestImages('Brown Plant Hopper'),
-    folderName: 'Brown Plant Hopper',
   },
   {
     slug: 'mango-leaf-hopper',

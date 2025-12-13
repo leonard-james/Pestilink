@@ -49,32 +49,12 @@ class ServiceController extends Controller
         ]);
 
         $pestName = strtolower(trim($request->input('pest')));
-
-        // Find services explicitly linked via pest_services pivot
-        $serviceIdsFromPivot = PestService::whereRaw('LOWER(pest_name) LIKE ?', ["%{$pestName}%"])
-            ->pluck('service_id')
-            ->toArray();
-
-        // Fetch active services once to avoid duplicate queries
-        $activeServices = Service::where('is_active', true)
+        
+        // First, try exact match
+        $services = Service::where('is_active', true)
+            ->whereJsonContains('pest_types', $request->input('pest'))
             ->with('company')
-            ->get();
-
-        // Also include services whose JSON pest_types mention this pest (case-insensitive)
-        $serviceIdsFromTags = $activeServices
-            ->filter(function ($service) use ($pestName) {
-                $pests = collect($service->pest_types ?? []);
-                return $pests->contains(function ($pest) use ($pestName) {
-                    return str_contains(strtolower($pest), $pestName);
-                });
-            })
-            ->pluck('id')
-            ->toArray();
-
-        $allServiceIds = array_unique(array_merge($serviceIdsFromPivot, $serviceIdsFromTags));
-
-        $services = $activeServices
-            ->filter(fn ($service) => in_array($service->id, $allServiceIds))
+            ->get()
             ->map(function ($service) {
                 return [
                     'id' => $service->id,
@@ -90,10 +70,32 @@ class ServiceController extends Controller
                 ];
             });
 
-        return response()->json([
-            'services' => $services,
-            'pest' => $pestName,
-        ], 200);
+        // If no exact matches found, try case-insensitive search
+        if ($services->isEmpty()) {
+            $allServices = Service::where('is_active', true)
+                ->with('company')
+                ->get();
+
+            $services = $allServices->filter(function ($service) use ($pestName) {
+                $pests = collect($service->pest_types ?? [])->map(fn($p) => strtolower($p));
+                return $pests->contains($pestName);
+            })->map(function ($service) {
+                return [
+                    'id' => $service->id,
+                    'title' => $service->title,
+                    'description' => $service->description,
+                    'price' => $service->price,
+                    'pest_types' => $service->pest_types ?? [],
+                    'company_name' => $service->company->company_name ?? 'Unknown',
+                    'location' => $service->company->location ?? '',
+                    'phone' => $service->company->phone ?? '',
+                    'email' => $service->company->email ?? '',
+                    'image' => $service->image ? Storage::url($service->image) : null,
+                ];
+            });
+        }
+
+        return response()->json($services->values(), 200);
     }
 
     /**

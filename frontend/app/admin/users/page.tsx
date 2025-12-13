@@ -17,7 +17,6 @@ interface User {
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'date-asc' | 'date-desc'>('name-asc');
@@ -29,7 +28,6 @@ export default function UserManagement() {
   const [showFilters, setShowFilters] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const usersPerPage = 5;
 
   useEffect(() => {
     fetchUsers();
@@ -44,24 +42,34 @@ export default function UserManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const response = await fetch(`${getApiBase()}/api/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
       
       if (response.ok) {
         const data = await response.json();
+        // Handle different response formats
+        const usersData = Array.isArray(data) ? data : 
+                         (data?.data && Array.isArray(data.data) ? data.data : []);
+        
         // Transform backend data to match our interface
-        const transformedUsers = data.map((user: any) => ({
+        const transformedUsers = usersData.map((user: any) => ({
           id: user.id,
-          name: user.name,
+          name: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User',
           email: user.email,
-          role: user.role || 'farmer',
-          status: user.status || 'active',
-          lastLogin: user.last_login || user.lastLogin || user.updated_at || user.created_at,
+          role: (user.role || 'farmer').toLowerCase() as 'farmer' | 'company' | 'admin',
+          status: (user.status || 'active').toLowerCase() as 'active' | 'inactive' | 'suspended',
+          lastLogin: user.last_login || user.lastLogin || user.updated_at || user.created_at || new Date().toISOString(),
           createdAt: user.created_at || user.createdAt
         }));
+        
         setUsers(transformedUsers);
       } else {
         console.error('Failed to fetch users:', response.status, response.statusText);
@@ -128,11 +136,8 @@ export default function UserManagement() {
     }
   });
 
-  // Get current users
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  // Use all filtered users for the scrollable list
+  const currentUsers = filteredUsers;
 
   const handleAddUser = () => {
     setEditingUser({
@@ -155,26 +160,35 @@ export default function UserManagement() {
   };
 
   const handleDelete = async (userId: number) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(`${getApiBase()}/api/users/${userId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        
-        if (response.ok) {
-          setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-          alert('User deleted successfully!');
-        } else {
-          alert('Failed to delete user. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('An error occurred while deleting the user.');
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
       }
+
+      const response = await fetch(`${getApiBase()}/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+        alert('User deleted successfully!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData?.message || 'Failed to delete user. Please try again.';
+        throw new Error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert(`Error: ${error instanceof Error ? error.message : 'Failed to delete user. Please try again.'}`);
     }
   };
 
@@ -330,12 +344,10 @@ export default function UserManagement() {
       ...prev,
       [name]: value || ''
     }));
-    setCurrentPage(1); // Reset to first page when filters change
   };
   
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value as any);
-    setCurrentPage(1); // Reset to first page when sort changes
   };
 
   return (
@@ -478,164 +490,101 @@ export default function UserManagement() {
                 )}
               </div>
 
-              {/* Users Table */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/50">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left text-gray-300">
-                    <thead className="text-xs text-gray-300 uppercase bg-gray-700/50">
-                      <tr>
-                        <th scope="col" className="px-6 py-3">Name</th>
-                        <th scope="col" className="px-6 py-3">Email</th>
-                        <th scope="col" className="px-6 py-3">Role</th>
-                        <th scope="col" className="px-6 py-3">Status</th>
-                        <th scope="col" className="px-6 py-3">Last Login</th>
-                        <th scope="col" className="px-6 py-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                        Array.from({ length: usersPerPage }).map((_, index) => (
-                          <tr key={index} className="border-t border-gray-700/50 animate-pulse">
-                            <td className="px-6 py-4">
-                              <div className="flex items-center">
-                                <div className="h-8 w-8 rounded-full bg-gray-600/30 mr-3"></div>
-                                <div className="h-4 bg-gray-600/30 rounded w-32"></div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4"><div className="h-4 bg-gray-600/30 rounded w-40"></div></td>
-                            <td className="px-6 py-4"><div className="h-6 bg-gray-600/30 rounded w-16"></div></td>
-                            <td className="px-6 py-4"><div className="h-6 bg-gray-600/30 rounded w-16"></div></td>
-                            <td className="px-6 py-4"><div className="h-4 bg-gray-600/30 rounded w-24"></div></td>
-                            <td className="px-6 py-4"><div className="h-8 bg-gray-600/30 rounded w-20 ml-auto"></div></td>
+              {/* User List */}
+              <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl shadow-lg border border-gray-700/50 overflow-hidden">
+                {loading ? (
+                  <div className="flex justify-center items-center h-64 p-6">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                  </div>
+                ) : currentUsers.length === 0 ? (
+                  <div className="text-center py-12 px-6">
+                    <FiUsers className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-lg font-medium text-gray-300">No users found</h3>
+                    <p className="mt-1 text-gray-400">Try adjusting your search or filter criteria</p>
+                  </div>
+                ) : (
+                  <div className="overflow-hidden">
+                    <div className="max-h-[70vh] overflow-y-auto">
+                      <table className="min-w-full divide-y divide-gray-700/50">
+                        <thead className="bg-gray-800/70 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-700/50">
+                          <tr>
+                            <th scope="col" className="px-6 py-3">Name</th>
+                            <th scope="col" className="px-6 py-3">Email</th>
+                            <th scope="col" className="px-6 py-3">Role</th>
+                            <th scope="col" className="px-6 py-3">Status</th>
+                            <th scope="col" className="px-6 py-3">Last Login</th>
+                            <th scope="col" className="px-6 py-3 text-right">Actions</th>
                           </tr>
-                        ))
-                      ) : currentUsers.length > 0 ? (
-                        currentUsers.map((user) => (
-                          <tr key={user.id} className="border-t border-gray-700/50 hover:bg-gray-700/20 transition-colors">
-                            <td className="px-6 py-4 font-medium whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold mr-3">
-                                  {user.name.charAt(0)}
+                        </thead>
+                        <tbody className="divide-y divide-gray-700/30">
+                          {currentUsers.map((user) => (
+                            <tr key={user.id} className="hover:bg-gray-700/20 transition-colors">
+                              <td className="px-6 py-4 font-medium whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold mr-3">
+                                    {user.name.charAt(0)}
+                                  </div>
+                                  {user.name}
                                 </div>
-                                {user.name}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">{user.email}</td>
-                            <td className="px-6 py-4">
-                              <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
-                                user.role === 'farmer' ? 'bg-green-900/50 text-green-300' :
-                                user.role === 'company' ? 'bg-blue-900/50 text-blue-300' :
-                                'bg-purple-900/50 text-purple-300'
-                              }`}>
-                                {user.role === 'farmer' ? 'Farmer' : 
-                                 user.role === 'company' ? 'Company' : 'Admin'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
-                                user.status === 'active' ? 'bg-green-900/50 text-green-300' :
-                                user.status === 'inactive' ? 'bg-yellow-900/50 text-yellow-300' :
-                                'bg-red-900/50 text-red-300'
-                              }`}>
-                                {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">{user.lastLogin}</td>
-                            <td className="px-6 py-4 text-right">
-                              <div className="flex justify-end space-x-2">
-                                <button
-                                  onClick={() => handleEdit(user.id)}
-                                  className="p-1.5 text-gray-400 hover:text-blue-400 transition-colors"
-                                  title="Edit user"
-                                >
-                                  <FiEdit2 />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(user.id)}
-                                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
-                                  title="Delete user"
-                                >
-                                  <FiTrash2 />
-                                </button>
-                                <select
-                                  value={user.status}
-                                  onChange={(e) => handleStatusChange(user.id, e.target.value as User['status'])}
-                                  className="bg-gray-700/50 border border-gray-600/50 text-white text-xs rounded-lg px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
-                                >
-                                  <option value="active">Active</option>
-                                  <option value="inactive">Inactive</option>
-                                  <option value="suspended">Suspended</option>
-                                </select>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
-                            No users found matching your search criteria.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                {filteredUsers.length > usersPerPage && (
-                  <div className="px-6 py-4 bg-gray-700/30 border-t border-gray-700/50 flex items-center justify-between">
-                    <div className="text-sm text-gray-400">
-                      Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{' '}
-                      <span className="font-medium">
-                        {Math.min(indexOfLastUser, filteredUsers.length)}
-                      </span>{' '}
-                      of <span className="font-medium">{filteredUsers.length}</span> users
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="p-1.5 rounded-md border border-gray-600/50 bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FiChevronLeft />
-                      </button>
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        // Show first page, last page, and pages around current page
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-                        
-                        return pageNum > 0 && pageNum <= totalPages ? (
-                          <button
-                            key={pageNum}
-                            onClick={() => setCurrentPage(pageNum)}
-                            className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                              currentPage === pageNum
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        ) : null;
-                      })}
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="p-1.5 rounded-md border border-gray-600/50 bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FiChevronRight />
-                      </button>
+                              </td>
+                              <td className="px-6 py-4">{user.email}</td>
+                              <td className="px-6 py-4">
+                                <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                                  user.role === 'farmer' ? 'bg-green-900/50 text-green-300' :
+                                  user.role === 'company' ? 'bg-blue-900/50 text-blue-300' :
+                                  'bg-purple-900/50 text-purple-300'
+                                }`}>
+                                  {user.role === 'farmer' ? 'Farmer' : 
+                                   user.role === 'company' ? 'Company' : 'Admin'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                                  user.status === 'active' ? 'bg-green-900/50 text-green-300' :
+                                  user.status === 'inactive' ? 'bg-yellow-900/50 text-yellow-300' :
+                                  'bg-red-900/50 text-red-300'
+                                }`}>
+                                  {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">{user.lastLogin}</td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex justify-end space-x-2">
+                                  <button
+                                    onClick={() => handleEdit(user.id)}
+                                    className="p-1.5 text-gray-400 hover:text-blue-400 transition-colors"
+                                    title="Edit user"
+                                  >
+                                    <FiEdit2 />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(user.id)}
+                                    className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                                    title="Delete user"
+                                  >
+                                    <FiTrash2 />
+                                  </button>
+                                  <select
+                                    value={user.status}
+                                    onChange={(e) => handleStatusChange(user.id, e.target.value as User['status'])}
+                                    className="bg-gray-700/50 border border-gray-600/50 text-white text-xs rounded-lg px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+                                  >
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                  </select>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 )}
+                <div className="px-6 py-3 text-sm text-gray-400 bg-gray-800/30 border-t border-gray-700/50">
+                  Total: <span className="font-medium text-white">{filteredUsers.length}</span> users
+                </div>
               </div>
             </div>
           </div>

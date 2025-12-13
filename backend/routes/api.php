@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\PestController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Middleware\EnsureUserIsFarmer;
 use App\Http\Middleware\EnsureUserIsCompany;
 use App\Http\Middleware\EnsureUserIsAdmin;
@@ -59,5 +60,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::patch('/read-all', [NotificationController::class, 'markAllAsRead']);
+    });
+
+    // Admin user management routes
+    Route::prefix('users')->middleware(EnsureUserIsAdmin::class)->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::delete('/{id}', [UserController::class, 'destroy']);
     });
 });

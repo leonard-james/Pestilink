@@ -47,55 +47,56 @@ export default function AdminDashboard() {
   const fetchUserStats = async () => {
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
       
       // Fetch all users to calculate statistics
       const usersResponse = await fetch(`${getApiBase()}/api/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
       
-      if (usersResponse.ok) {
-        const users = await usersResponse.json();
-        
-        // Calculate statistics from real user data
-        const totalUsers = users.length;
-        const totalFarmers = users.filter((user: any) => user.role === 'farmer').length;
-        const totalCompanies = users.filter((user: any) => user.role === 'company').length;
-        
-        // Calculate new users this month
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-        const newUsersThisMonth = users.filter((user: any) => {
-          const createdDate = new Date(user.created_at || user.createdAt);
-          return createdDate.getMonth() === currentMonth && createdDate.getFullYear() === currentYear;
-        }).length;
-        
-        // Calculate active users (users who logged in within last 7 days)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const activeUsers = users.filter((user: any) => {
-          const lastLogin = new Date(user.last_login || user.updated_at || user.created_at);
-          return lastLogin >= sevenDaysAgo;
-        }).length;
-        
-        setUserStats({
-          totalUsers,
-          totalFarmers,
-          totalCompanies,
-          activeUsers,
-          newUsersThisMonth,
-        });
-      } else {
-        console.error('Failed to fetch users for stats:', usersResponse.status);
-        setUserStats({
-          totalUsers: 0,
-          totalFarmers: 0,
-          totalCompanies: 0,
-          activeUsers: 0,
-          newUsersThisMonth: 0,
-        });
+      if (!usersResponse.ok) {
+        throw new Error(`Failed to fetch users: ${usersResponse.status} ${usersResponse.statusText}`);
       }
+      
+      const responseData = await usersResponse.json();
+      
+      // Check if the response contains a data property with the users array
+      const users = Array.isArray(responseData) ? responseData : 
+                  (responseData.data && Array.isArray(responseData.data) ? responseData.data : []);
+      
+      // Calculate statistics from real user data
+      const totalUsers = users.length;
+      const totalFarmers = users.filter((user) => user?.role === 'farmer').length;
+      const totalCompanies = users.filter((user) => user?.role === 'company').length;
+      
+      // Calculate new users this month
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const newUsersThisMonth = users.filter((user: any) => {
+        const createdDate = new Date(user.created_at || user.createdAt);
+        return createdDate.getMonth() === currentMonth && createdDate.getFullYear() === currentYear;
+      }).length;
+      
+      // Calculate active users (users who logged in within last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const activeUsers = users.filter((user: any) => {
+        const lastLogin = new Date(user.last_login || user.updated_at || user.created_at);
+        return lastLogin >= sevenDaysAgo;
+      }).length;
+      
+      setUserStats({
+        totalUsers,
+        totalFarmers,
+        totalCompanies,
+        activeUsers,
+        newUsersThisMonth,
+      });
     } catch (error) {
       console.error('Error fetching user stats:', error);
       setUserStats({
@@ -263,12 +264,12 @@ export default function AdminDashboard() {
     return `${diffInDays}d ago`;
   };
   return (
-    <div className="min-h-screen w-full bg-gray-900 text-white flex">
+    <div className="h-screen w-full bg-transparent text-white flex overflow-hidden">
       <DashboardSidebar role="admin" />
       
-      <main className="relative z-10 flex-1 ml-20 peer-hover:ml-64 transition-all duration-300">
-        <div className="relative min-h-screen">
-          {/* Background image */}
+      <div className="relative flex-1 ml-20 peer-hover:ml-64 transition-all duration-300 h-full overflow-y-auto">
+        {/* Fixed Background */}
+        <div className="fixed inset-0 -z-10">
           <Image
             src="/farm pic.jpg"
             alt="Admin Dashboard Background"
@@ -276,12 +277,14 @@ export default function AdminDashboard() {
             className="object-cover"
             priority
           />
-
-          {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+        </div>
+        
+        {/* Scrollable Content */}
+        <div className="relative min-h-full">
 
           {/* Content */}
-          <div className="absolute inset-0 w-full px-4">
+          <div className="w-full px-4 pt-4">
             <div className="w-full max-w-[1800px] mx-auto">
               {/* Title Box */}
               <div className="mb-10 text-center">
@@ -573,8 +576,15 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+          
+          {/* Footer - This will be at the bottom of the scrollable content */}
+          <footer className="w-full py-6 px-4 mt-10 bg-black/50 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto text-center text-gray-400 text-sm">
+              <p>© {new Date().getFullYear()} Pestilink Admin Dashboard. All rights reserved.</p>
+            </div>
+          </footer>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
