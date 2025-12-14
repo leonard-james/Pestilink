@@ -25,7 +25,7 @@ type CoreValue = {
 const teamMembers: TeamMember[] = [
   {
     id: 1,
-    name: 'John Doe',
+    name: 'Mark John Ernacio',
     role: 'CEO & Founder',
     image: '/team-1.jpg',
     bio: '10+ years of experience in agricultural technology and pest management.',
@@ -33,7 +33,7 @@ const teamMembers: TeamMember[] = [
   },
   {
     id: 2,
-    name: 'Jane Smith',
+    name: 'Fola Faustine Gersalia',
     role: 'Lead Entomologist',
     image: '/team-2.jpg',
     bio: 'Expert in pest behavior and integrated pest management solutions.',
@@ -41,7 +41,7 @@ const teamMembers: TeamMember[] = [
   },
   {
     id: 3,
-    name: 'Robert Johnson',
+    name: 'Lloyd Allan Gimena',
     role: 'Tech Lead',
     image: '/team-3.jpg',
     bio: 'Specializes in developing cutting-edge pest detection algorithms.',
@@ -49,7 +49,7 @@ const teamMembers: TeamMember[] = [
   },
   {
     id: 4,
-    name: 'Sarah Williams',
+    name: 'Leonard James Gobris',
     role: 'Agricultural Specialist',
     image: '/team-4.jpg',
     bio: 'Focuses on sustainable farming practices and crop protection.',
