@@ -1,8 +1,16 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useNotifications } from '@/contexts/NotificationContext';
+
+interface NavItem {
+  name: string;
+  icon: string;
+  path: string;
+  notificationCount?: number;
+}
 
 interface DashboardSidebarProps {
   role?: 'farmer' | 'company' | 'admin';
@@ -13,6 +21,30 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
+  const { unreadCount } = useNotifications();
+  const [pendingBookingsCount, setPendingBookingsCount] = useState(0);
+
+  // Load pending bookings count from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedOrders = localStorage.getItem('pestlink_orders');
+      if (savedOrders) {
+        const orders = JSON.parse(savedOrders);
+        if (user?.role === 'company') {
+          // For companies, show pending booking requests
+          const pending = orders.filter((order: any) => order.status === 'pending').length;
+          setPendingBookingsCount(pending);
+        } else if (user?.role === 'farmer') {
+          // For farmers, show unread status updates
+          const farmerOrders = orders.filter((order: any) => 
+            order.farmerEmail === user?.email && 
+            (order.status === 'confirmed' || order.status === 'cancelled' || order.status === 'completed')
+          );
+          setPendingBookingsCount(farmerOrders.length);
+        }
+      }
+    }
+  }, [user?.role, user?.email]);
   
   // Determine role from user if not provided
   const userRole = role || user?.role || 'farmer';
@@ -25,19 +57,40 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
 
 
   // Common navigation items for all users
-  const commonNavItems = [
+  const commonNavItems: NavItem[] = [
     { name: 'Services', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z', path: '/services' },
     { name: 'Pest Classification', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', path: '/pest-services' },
     { name: 'About', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', path: '/about' },
   ];
 
   // Get navigation items based on role - each role has different accessible features
-  let navItems: typeof commonNavItems = [];
+  let navItems: NavItem[] = [];
   
   if (userRole === 'farmer') {
-    // Farmers can access: Dashboard, Pest Classification, Services, About
+    // Calculate pending orders count for the current farmer
+    const pendingOrdersCount = (() => {
+      if (typeof window !== 'undefined') {
+        const savedOrders = localStorage.getItem('pestlink_orders');
+        if (savedOrders) {
+          const orders = JSON.parse(savedOrders);
+          return orders.filter((order: any) => 
+            order.status === 'pending' && 
+            order.farmerEmail === user?.email
+          ).length;
+        }
+      }
+      return 0;
+    })();
+
+    // Farmers can access: Dashboard, My Orders, Pest Classification, Services, About
     navItems = [
       { name: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', path: '/dashboard/farmer' },
+      { 
+        name: 'My Orders', 
+        icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 
+        path: '/dashboard/farmer/orders',
+        notificationCount: pendingOrdersCount
+      },
       { name: 'Pest Classification', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', path: '/pest-services' },
       { name: 'Services', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z', path: '/services' },
       { name: 'About', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', path: '/about' },
@@ -47,7 +100,12 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
     navItems = [
       { name: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', path: '/dashboard/company' },
       { name: 'Manage Services', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', path: '/company/services' },
-      { name: 'Bookings', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', path: '/company/orders' },
+      { 
+        name: 'Bookings', 
+        icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 
+        path: '/company/orders', 
+        notificationCount: pendingBookingsCount 
+      },
       { name: 'About', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', path: '/about' },
     ];
   } else if (userRole === 'admin') {
@@ -138,21 +196,35 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
                 }`}
                 title={!isExpanded ? item.name : undefined}
               >
-                <svg
-                  className="h-5 w-5 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={item.icon}
-                  />
-                </svg>
+                <div className="relative">
+                  <svg
+                    className="h-5 w-5 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={item.icon}
+                    />
+                  </svg>
+                  {(item.notificationCount ?? 0) > 0 && (
+                    <span className="absolute -top-2 -right-2 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold">
+                      {(item.notificationCount ?? 0) > 9 ? '9+' : item.notificationCount}
+                    </span>
+                  )}
+                </div>
                 {isExpanded && (
-                  <span className="text-sm font-medium whitespace-nowrap">{item.name}</span>
+                  <span className="text-sm font-medium whitespace-nowrap">
+                    {item.name}
+                    {(item.notificationCount ?? 0) > 0 && !isExpanded && (
+                      <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                        {(item.notificationCount ?? 0) > 9 ? '9+' : item.notificationCount}
+                      </span>
+                    )}
+                  </span>
                 )}
               </button>
             );

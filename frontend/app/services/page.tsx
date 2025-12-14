@@ -18,6 +18,7 @@ interface Service {
   phone: string;
   email: string;
   image: string | null;
+  service_type?: 'service' | 'product';
   pest_types?: string[];
 }
 
@@ -27,6 +28,7 @@ interface OrderForm {
   farmerPhone: string;
   farmerAddress: string;
   serviceDate: string;
+  quantity: number;
   notes: string;
 }
 
@@ -51,11 +53,12 @@ export default function ServicesPage() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isOrderCompleteModalOpen, setIsOrderCompleteModalOpen] = useState(false);
   const [orderForm, setOrderForm] = useState<OrderForm>({
-    farmerName: '',
-    farmerEmail: '',
+    farmerName: user?.name || '',
+    farmerEmail: user?.email || '',
     farmerPhone: '',
     farmerAddress: '',
     serviceDate: '',
+    quantity: 1,
     notes: ''
   });
 
@@ -97,6 +100,7 @@ export default function ServicesPage() {
       farmerPhone: '',
       farmerAddress: '',
       serviceDate: '',
+      quantity: 1,
       notes: ''
     });
     setIsOrderModalOpen(true);
@@ -108,6 +112,11 @@ export default function ServicesPage() {
     if (!selectedService) return;
 
     // Create order object
+    const isProduct = selectedService.service_type === 'product';
+    const quantity = isProduct ? orderForm.quantity : 1;
+    const basePrice = selectedService.price || 0;
+    const totalAmount = isProduct ? basePrice * quantity : basePrice;
+    
     const order = {
       id: Date.now(), // Simple ID generation
       farmerName: orderForm.farmerName,
@@ -118,7 +127,8 @@ export default function ServicesPage() {
       companyName: selectedService.company_name,
       orderDate: new Date().toISOString(),
       status: 'pending' as const,
-      totalAmount: selectedService.price || 0,
+      quantity: isProduct ? quantity : undefined,
+      totalAmount: totalAmount,
       notes: orderForm.notes,
       serviceDate: orderForm.serviceDate
     };
@@ -134,10 +144,10 @@ export default function ServicesPage() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target as HTMLInputElement;
     setOrderForm(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'number' ? parseInt(value) || 1 : value
     }));
   };
 
@@ -190,20 +200,30 @@ export default function ServicesPage() {
               {filteredServices.map((service) => (
                 <div 
                   key={service.id} 
-                  className="bg-green-900/20 backdrop-blur-sm rounded-xl border border-emerald-800/30 overflow-hidden hover:shadow-xl hover:shadow-emerald-900/10 transition-all duration-300 hover:-translate-y-1"
+                  className="bg-green-900/20 backdrop-blur-sm rounded-xl border border-emerald-800/30 overflow-hidden hover:shadow-xl hover:shadow-emerald-900/10 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full"
                 >
-                  {service.image && (
-                    <div className="w-full h-48 rounded-lg overflow-hidden mb-4">
+                  <div className="w-full h-48 bg-gray-800/50 overflow-hidden">
+                    {service.image ? (
                       <img
                         src={service.image}
                         alt={service.title}
                         className="w-full h-full object-cover"
                       />
-                    </div>
-                  )}
-                  <div className="p-5 space-y-3 text-sm">
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-800/30">
+                        <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5 space-y-3 text-sm flex-1 flex flex-col">
                     <h3 className="text-xl font-bold text-amber-50 mb-2">{service.title}</h3>
-                    <p className="text-amber-50/80 mb-4 leading-relaxed line-clamp-2">{service.description}</p>
+                    <div className="flex-1">
+                      <p className="text-amber-50/80 mb-4 leading-relaxed line-clamp-3 min-h-[4.5rem]">
+                        {service.description || 'No description available'}
+                      </p>
+                    </div>
                     <div className="flex items-start gap-2">
                       <svg className="w-4 h-4 text-amber-400/80 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -244,7 +264,7 @@ export default function ServicesPage() {
                     )}
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-emerald-800/40 flex items-center justify-between">
+                  <div className="mt-auto pt-4 border-t border-emerald-800/40 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -277,126 +297,182 @@ export default function ServicesPage() {
 
       {/* Order Modal */}
       {isOrderModalOpen && selectedService && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">Order Service</h2>
-              <div className="mb-4 p-3 bg-gray-700/50 rounded-lg">
-                <h3 className="font-semibold text-emerald-400">{selectedService.title}</h3>
-                <p className="text-sm text-gray-300">{selectedService.company_name}</p>
-                {selectedService.price && (
-                  <p className="text-sm font-semibold">₱{selectedService.price.toLocaleString()}</p>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900/95 backdrop-blur-md rounded-xl border border-emerald-800/30 shadow-2xl shadow-emerald-900/20 w-full max-w-md max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-emerald-900/50">
+              <h2 className="text-2xl font-bold text-amber-50">Service Request</h2>
+              <p className="text-sm text-emerald-300 mt-1">Complete the form to request this service</p>
+            </div>
+            
+            <div className="p-6 border-b border-emerald-900/50 bg-emerald-900/10">
+              <div className="flex items-start gap-4">
+                {selectedService.image && (
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border border-emerald-800/50">
+                    <img
+                      src={selectedService.image}
+                      alt={selectedService.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 )}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-amber-50">{selectedService.title}</h3>
+                  <p className="text-sm text-emerald-300">{selectedService.company_name}</p>
+                  {selectedService.price && (
+                    <div className="mt-1 flex items-center">
+                      <svg className="w-4 h-4 text-amber-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="font-bold text-amber-300">₱{selectedService.price.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              
-              <form onSubmit={handleOrderSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="farmerName"
-                      value={orderForm.farmerName}
-                      onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Email <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="farmerEmail"
-                      value={orderForm.farmerEmail}
-                      onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Phone Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="farmerPhone"
-                      value={orderForm.farmerPhone}
-                      onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="farmerAddress"
-                      value={orderForm.farmerAddress}
-                      onChange={handleInputChange}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Preferred Service Date <span className="text-red-500">*</span>
-                    </label>
+            </div>
+            
+            <form onSubmit={handleOrderSubmit} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-amber-100 mb-1.5">
+                    Full Name <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="farmerName"
+                    value={orderForm.farmerName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 bg-gray-800/60 border border-emerald-800/40 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-amber-50 placeholder-gray-400 transition-all duration-200"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-amber-100 mb-1.5">
+                    Email <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="farmerEmail"
+                    value={orderForm.farmerEmail}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 bg-gray-800/60 border border-emerald-800/40 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-amber-50 placeholder-gray-400 transition-all duration-200"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-amber-100 mb-1.5">
+                    Phone Number <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="farmerPhone"
+                    value={orderForm.farmerPhone}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 bg-gray-800/60 border border-emerald-800/40 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-amber-50 placeholder-gray-400 transition-all duration-200"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-amber-100 mb-1.5">
+                    Address <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="farmerAddress"
+                    value={orderForm.farmerAddress}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 bg-gray-800/60 border border-emerald-800/40 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-amber-50 placeholder-gray-400 transition-all duration-200"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-amber-100 mb-1.5">
+                    Preferred Service Date <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
                     <input
                       type="date"
                       name="serviceDate"
                       value={orderForm.serviceDate}
                       onChange={handleInputChange}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-2.5 bg-gray-800/60 border border-emerald-800/40 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-amber-50 placeholder-gray-400 pr-10 appearance-none"
                       required
                     />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
-                      Additional Notes
-                    </label>
-                    <textarea
-                      name="notes"
-                      value={orderForm.notes}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 text-white text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
-                      placeholder="Any specific requirements or notes..."
-                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
+
+                {selectedService.service_type === 'product' && (
+                  <div>
+                    <label className="block text-sm font-medium text-amber-100 mb-1.5">
+                      Quantity <span className="text-red-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        value={orderForm.quantity}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 bg-gray-800/60 border border-emerald-800/40 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-amber-50 placeholder-gray-400 transition-all duration-200 pr-10"
+                        required
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
-                <div className="mt-6 flex justify-end space-x-3">
+                <div>
+                  <label className="block text-sm font-medium text-amber-100 mb-1.5">
+                    Additional Notes
+                  </label>
+                  <textarea
+                    name="notes"
+                    value={orderForm.notes}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-4 py-2.5 bg-gray-800/60 border border-emerald-800/40 rounded-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-amber-50 placeholder-gray-400 transition-all duration-200 resize-none"
+                    placeholder="Any specific requirements or notes..."
+                  />
+                </div>
+              </div>
+              
+              <div className="sticky bottom-0 bg-gray-900/80 backdrop-blur-sm p-4 border-t border-emerald-900/50">
+                <div className="flex justify-end space-x-3">
                   <button
                     type="button"
                     onClick={() => {
                       setIsOrderModalOpen(false);
                       setSelectedService(null);
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-colors"
+                    className="px-5 py-2.5 text-sm font-medium text-amber-100 bg-gray-700/80 hover:bg-gray-600/80 rounded-lg transition-colors duration-200 border border-gray-600/50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
+                    className="px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors duration-200 flex items-center gap-2 border border-emerald-500/50 shadow-lg shadow-emerald-900/30"
                   >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
                     Confirm Order
                   </button>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       )}

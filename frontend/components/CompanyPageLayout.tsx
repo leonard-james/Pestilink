@@ -38,14 +38,18 @@ export default function CompanyPageLayout({
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
       </div>
 
-      <div className="flex-1 p-4 md:p-8 ml-0 md:ml-64 relative z-0">
-        <div className="w-full">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div className="mb-4 md:mb-0">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">{title}</h1>
-              {description && <p className="text-gray-300 text-sm md:text-base">{description}</p>}
+      <div className="flex-1 p-4 md:p-8 ml-0 md:ml-20 peer-hover:ml-64 transition-all duration-300 relative z-0">
+        <div className="w-full max-w-[1800px] mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-1 truncate">{title}</h1>
+              {description && <p className="text-gray-300 text-sm md:text-base truncate">{description}</p>}
             </div>
-            {headerRight}
+            {headerRight && (
+              <div className="w-full md:w-auto">
+                {headerRight}
+              </div>
+            )}
           </div>
           
           <div className="w-full">

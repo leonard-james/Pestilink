@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardSidebar from '../../components/DashboardSidebar';
 import Footer from '../../components/Footer';
 import Dropdown from '../../components/Dropdown';
@@ -81,6 +81,25 @@ export default function PestsPage() {
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState<{images: string[], index: number} | null>(null);
   const [pests, setPests] = useState([...completePestData].sort((a, b) => a.name.localeCompare(b.name)));
+  const [currentPestIndex, setCurrentPestIndex] = useState(0);
+  
+  // Array of pest groups to rotate through
+  const pestGroups = [
+    ['American Cockroach', 'Rice Bug', 'Termite', 'Mosquito'],
+    ['Aphid', 'Apple Snail', 'Armyworm', 'Bed Bug'],
+    ['Brown Leaf Hopper', 'Carpenter Ant', 'Coconut Rhinoceros Beetle', 'Colorado Potato Beetle'],
+    ['Corn Root Worm', 'Diamondback Moth', 'Fire Ant', 'Garden Snail'],
+    ['German Cockroach', 'House Fly', 'Mango Leaf Hopper', 'Red Flour Beetle']
+  ];
+  
+  // Rotate through pest groups every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPestIndex((prevIndex) => (prevIndex + 1) % pestGroups.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   const handleDelete = async (slug: string) => {
     if (!confirm('Are you sure you want to delete this pest? This action cannot be undone.')) {
@@ -293,25 +312,27 @@ export default function PestsPage() {
                           src={firstImage} 
                           alt={pest.name} 
                           className="w-full h-full object-cover cursor-pointer"
-                          onClick={() => setFullscreenImage({ images: images, index: 0 })}
                         />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setFullscreenImage({ images: images, index: 0 });
-                            }}
-                            className="px-3 py-1 bg-white/90 text-black rounded-full text-sm font-medium hover:bg-white transition-colors"
-                          >
-                            View Fullscreen
-                          </button>
-                        </div>
                       </>
                     ) : (
-                      <span className="text-5xl">{pest.image}</span>
+                      <div className="text-gray-400 text-sm">No image available</div>
                     )}
                   </div>
-                  <h3 className="text-xl font-bold text-center">{pest.name}</h3>
+                  <h3 className="text-xl font-semibold mt-4 mb-2">{pest.name}</h3>
+                  <p className="text-gray-300 text-sm line-clamp-2 mb-4">
+                    {pest.description}
+                  </p>
+                  <div className="mt-auto w-full">
+                    <button 
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/pest-services/pests/${pest.slug}`);
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </div>
                 </div>
               );
             })}

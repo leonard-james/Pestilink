@@ -169,7 +169,7 @@ export default function ServiceModal({ isOpen, onClose, onSubmit, service }: Ser
                   selectedPests.map((pest) => (
                     <span
                       key={pest}
-                      className={({ active }) => `relative cursor-default select-none py-2 pl-3 pr-9 ${active ? 'bg-emerald-600 text-white' : 'text-white'}`}
+                      className="relative cursor-default select-none py-2 pl-3 pr-9 text-white hover:bg-emerald-600"
                     >
                       {pest}
                       <button
