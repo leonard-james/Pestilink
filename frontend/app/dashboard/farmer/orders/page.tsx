@@ -234,7 +234,7 @@ export default function FarmerOrders() {
                               // In a real app, this would cancel the order
                               if (confirm('Are you sure you want to cancel this order?')) {
                                 const updatedOrders = orders.map(o => 
-                                  o.id === order.id ? { ...o, status: 'cancelled' } : o
+                                  o.id === order.id ? { ...o, status: 'cancelled' as const } : o
                                 );
                                 setOrders(updatedOrders);
                                 localStorage.setItem('pestlink_orders', JSON.stringify(updatedOrders));
