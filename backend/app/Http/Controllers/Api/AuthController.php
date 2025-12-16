@@ -29,9 +29,11 @@ class AuthController extends Controller
             ]);
         }
 
-        // Load company relationship if user is a company
+        // Load relationships based on user role
         if ($user->role === 'company') {
             $user->load('company');
+        } elseif ($user->role === 'farmer') {
+            $user->load('farmer');
         }
 
         $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;
@@ -52,12 +54,17 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'string', 'in:farmer,company'], // Only farmer or company allowed
+            'role' => ['required', 'string', 'in:farmer,company'],
+            
             // Company-specific fields
             'company_name' => ['required_if:role,company', 'string', 'max:255'],
             'address' => ['required_if:role,company', 'string'],
             'contact_number' => ['required_if:role,company', 'string'],
-            'logo_url' => ['nullable', 'string', 'url'], // Optional Cloudinary URL
+            'logo_url' => ['nullable', 'string', 'url'],
+            
+            // Farmer-specific fields
+            'phone' => ['required_if:role,farmer', 'string', 'max:20'],
+            'location' => ['required_if:role,farmer', 'string', 'max:255'],
         ]);
 
         // Prevent admin registration
@@ -76,7 +83,7 @@ class AuthController extends Controller
                 'role' => $validated['role'] ?? 'farmer',
             ]);
 
-            // Create company record if role is company
+            // Create company or farmer record based on role
             if ($user->role === 'company') {
                 \App\Models\Company::create([
                     'user_id' => $user->id,
@@ -86,6 +93,14 @@ class AuthController extends Controller
                     'logo_url' => $validated['logo_url'] ?? null,
                 ]);
                 $user->load('company');
+            } elseif ($user->role === 'farmer') {
+                \App\Models\Farmer::create([
+                    'user_id' => $user->id,
+                    'phone' => $validated['phone'],
+                    'address' => $validated['address'] ?? null,
+                    'location' => $validated['location'],
+                ]);
+                $user->load('farmer');
             }
 
             $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;

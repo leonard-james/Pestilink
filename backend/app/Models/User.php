@@ -23,6 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'status',
+        'last_login',
     ];
 
     /**
@@ -45,6 +47,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => 'string',
+            'status' => 'string',
+            'last_login' => 'datetime',
         ];
     }
 
@@ -54,6 +59,14 @@ class User extends Authenticatable
     public function company()
     {
         return $this->hasOne(Company::class);
+    }
+
+    /**
+     * Get the farmer profile associated with the user.
+     */
+    public function farmer()
+    {
+        return $this->hasOne(Farmer::class);
     }
 
     /**
