@@ -19,6 +19,9 @@ export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserPhone, setNewUserPhone] = useState('');
+  const [newCompanyName, setNewCompanyName] = useState('');
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'date-asc' | 'date-desc'>('name-asc');
   const [filters, setFilters] = useState({
     status: '' as '' | 'active' | 'inactive' | 'suspended',
@@ -140,6 +143,9 @@ export default function UserManagement() {
   const currentUsers = filteredUsers;
 
   const handleAddUser = () => {
+    setNewUserPassword('');
+    setNewUserPhone('');
+    setNewCompanyName('');
     setEditingUser({
       id: 0, // 0 indicates a new user
       name: '',
@@ -195,15 +201,26 @@ export default function UserManagement() {
   const handleStatusChange = async (userId: number, newStatus: User['status']) => {
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      const user = users.find(item => item.id === userId);
+      if (!user) {
+        throw new Error('User not found.');
+      }
       const response = await fetch(`${getApiBase()}/api/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          name: user.name,
+          email: user.email,
+          status: newStatus,
+        }),
       });
-      
+
       if (response.ok) {
         setUsers(prevUsers =>
           prevUsers.map(user =>
@@ -211,11 +228,12 @@ export default function UserManagement() {
           )
         );
       } else {
-        alert('Failed to update user status. Please try again.');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update user status.');
       }
     } catch (error) {
       console.error('Error updating user status:', error);
-      alert('An error occurred while updating the user status.');
+      alert(error instanceof Error ? error.message : 'An error occurred while updating the user status.');
     }
   };
 
@@ -250,12 +268,19 @@ export default function UserManagement() {
       return;
     }
 
+    if (editingUser.id === 0 && newUserPassword.length < 8) {
+      alert('Please enter a password with at least 8 characters');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
       
       if (editingUser.id === 0) {
-        // Add new user
-        const response = await fetch(`${getApiBase()}/api/admin/users`, {
+        const response = await fetch(`${getApiBase()}/api/users`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -264,26 +289,33 @@ export default function UserManagement() {
           body: JSON.stringify({
             name: editingUser.name,
             email: editingUser.email,
+            password: newUserPassword,
             role: editingUser.role,
             status: editingUser.status,
+            ...(editingUser.role === 'farmer' ? { phone: newUserPhone || null } : {}),
+            ...(editingUser.role === 'company' ? { company_name: newCompanyName || editingUser.name } : {}),
           }),
         });
         
         if (response.ok) {
-          const newUser = await response.json();
+          const responseData = await response.json();
+          const newUser = responseData.data || responseData;
           setUsers(prevUsers => [...prevUsers, {
-            ...newUser,
-            lastLogin: newUser.last_login || newUser.lastLogin || new Date().toISOString(),
-            createdAt: newUser.created_at || newUser.createdAt || new Date().toISOString()
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+            role: newUser.role,
+            status: newUser.status,
+            lastLogin: newUser.last_login || newUser.updated_at || newUser.created_at || new Date().toISOString(),
+            createdAt: newUser.created_at || new Date().toISOString(),
           }]);
           alert('User added successfully!');
         } else {
-          alert('Failed to add user. Please try again.');
-          return;
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to add user.');
         }
       } else {
-        // Update existing user
-        const response = await fetch(`${getApiBase()}/api/admin/users/${editingUser.id}`, {
+        const response = await fetch(`${getApiBase()}/api/users/${editingUser.id}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -292,7 +324,6 @@ export default function UserManagement() {
           body: JSON.stringify({
             name: editingUser.name,
             email: editingUser.email,
-            role: editingUser.role,
             status: editingUser.status,
           }),
         });
@@ -310,13 +341,13 @@ export default function UserManagement() {
           );
           alert('User updated successfully!');
         } else {
-          alert('Failed to update user. Please try again.');
-          return;
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to update user.');
         }
       }
     } catch (error) {
       console.error('Error saving user:', error);
-      alert('An error occurred while saving the user.');
+      alert(error instanceof Error ? error.message : 'An error occurred while saving the user.');
       return;
     }
     
@@ -624,18 +655,62 @@ export default function UserManagement() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">Role</label>
-                      <select
-                        name="role"
-                        value={editingUser.role}
-                        onChange={handleInputChange}
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
-                        required
-                      >
-                        <option value="farmer">Farmer</option>
-                        <option value="company">Company</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                      {editingUser.id === 0 ? (
+                        <select
+                          name="role"
+                          value={editingUser.role}
+                          onChange={handleInputChange}
+                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                          required
+                        >
+                          <option value="farmer">Farmer</option>
+                          <option value="company">Company</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      ) : (
+                        <p className="rounded-lg bg-gray-700 px-3 py-2 capitalize text-white">
+                          {editingUser.role}
+                        </p>
+                      )}
                     </div>
+                    {editingUser.id === 0 && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-1">Initial Password</label>
+                          <input
+                            type="password"
+                            value={newUserPassword}
+                            onChange={(e) => setNewUserPassword(e.target.value)}
+                            minLength={8}
+                            autoComplete="new-password"
+                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                            required
+                          />
+                        </div>
+                        {editingUser.role === 'farmer' && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-1">Phone (optional)</label>
+                            <input
+                              type="tel"
+                              value={newUserPhone}
+                              onChange={(e) => setNewUserPhone(e.target.value)}
+                              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                            />
+                          </div>
+                        )}
+                        {editingUser.role === 'company' && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-1">Company Name (optional)</label>
+                            <input
+                              type="text"
+                              value={newCompanyName}
+                              onChange={(e) => setNewCompanyName(e.target.value)}
+                              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
                       <select

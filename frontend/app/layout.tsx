@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Pest Link",
   description: "Connecting You to Professional Pest Control Services",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
+use App\Models\Farmer;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -33,6 +38,75 @@ class UserController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', Rule::in(['farmer', 'company', 'admin'])],
+            'status' => ['required', Rule::in(['active', 'inactive', 'suspended'])],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'company_name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $user = DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'role' => $validated['role'],
+                'status' => $validated['status'],
+            ]);
+
+            if ($user->role === 'farmer') {
+                Farmer::create([
+                    'user_id' => $user->id,
+                    'phone' => $validated['phone'] ?? null,
+                ]);
+            } elseif ($user->role === 'company') {
+                Company::create([
+                    'user_id' => $user->id,
+                    'company_name' => $validated['company_name'] ?? $user->name,
+                ]);
+            }
+
+            return $user;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $user,
+        ], 201);
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'status' => ['required', Rule::in(['active', 'inactive', 'suspended'])],
+        ]);
+
+        if ($user->id === $request->user()->id && $validated['status'] !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot deactivate or suspend your own account.',
+            ], 403);
+        }
+
+        $user->update($validated);
+        if ($user->status !== 'active') {
+            $user->tokens()->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $user,
+        ]);
     }
 
     /**

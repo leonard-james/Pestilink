@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -51,7 +53,7 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/');
+    router.replace('/login');
   };
 
 
@@ -131,8 +133,14 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
       <div className="h-full flex flex-col p-4">
         {/* Logo/Header */}
         <div className="mb-8 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-md bg-gradient-to-br from-emerald-500 to-lime-400 flex items-center justify-center font-bold text-black flex-shrink-0">
-            X
+          <div className="h-10 w-10 overflow-hidden rounded-md bg-gradient-to-br from-emerald-500 to-lime-400 flex-shrink-0">
+            <Image
+              src="/logo.png"
+              alt="Pest Link logo"
+              width={40}
+              height={40}
+              className="h-full w-full scale-[2] object-contain"
+            />
           </div>
           {isExpanded && (
             <span className="text-lg font-bold text-white whitespace-nowrap">PEST LINK</span>
@@ -158,22 +166,22 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
         ) : (
           <div className="mb-6 pb-6 border-b border-white/10">
             {isExpanded ? (
-              <button
-                onClick={() => router.push('/login')}
-                className="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-all duration-200"
+              <Link
+                href="/login"
+                className="block w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-all duration-200"
               >
                 Log In
-              </button>
+              </Link>
             ) : (
-              <button
-                onClick={() => router.push('/login')}
+              <Link
+                href="/login"
                 className="w-full p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center"
                 title="Log In"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-              </button>
+              </Link>
             )}
           </div>
         )}
@@ -186,9 +194,11 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
               (item.path !== '/admin' && pathname.startsWith(item.path + '/')) ||
               (item.path === '/admin' && pathname === '/admin');
             return (
-              <button
+              <Link
                 key={item.path}
-                onClick={() => router.push(item.path)}
+                href={item.path}
+                onMouseEnter={() => router.prefetch(item.path)}
+                onFocus={() => router.prefetch(item.path)}
                 className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
                   isActive
                     ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-600/30'
@@ -226,7 +236,7 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
                     )}
                   </span>
                 )}
-              </button>
+              </Link>
             );
           })}
         </nav>
@@ -237,7 +247,7 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-red-400 hover:bg-red-900/20 transition-all duration-200"
-              title={!isExpanded ? 'Sign out' : undefined}
+              title={!isExpanded ? 'Log out' : undefined}
             >
               <svg
                 className="h-5 w-5 flex-shrink-0"
@@ -252,11 +262,11 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
-              {isExpanded && <span className="text-sm font-medium whitespace-nowrap">Sign out</span>}
+              {isExpanded && <span className="text-sm font-medium whitespace-nowrap">Log out</span>}
             </button>
           ) : (
-            <button
-              onClick={() => router.push('/signup')}
+            <Link
+              href="/signup"
               className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-emerald-400 hover:bg-emerald-900/20 transition-all duration-200"
               title={!isExpanded ? 'Sign up' : undefined}
             >
@@ -274,11 +284,10 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
                 />
               </svg>
               {isExpanded && <span className="text-sm font-medium whitespace-nowrap">Sign up</span>}
-            </button>
+            </Link>
           )}
         </div>
       </div>
     </div>
   );
 }
-

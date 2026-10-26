@@ -33,6 +33,7 @@ interface RegisterCredentials {
   company_name?: string;
   address?: string;
   contact_number?: string;
+  phone?: string;
 }
 
 interface AuthResponse {

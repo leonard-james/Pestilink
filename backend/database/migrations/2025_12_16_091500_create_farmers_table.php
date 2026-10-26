@@ -11,22 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('farmers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('farm_name');
-            $table->text('description')->nullable();
-            $table->string('location');
-            $table->string('phone');
-            $table->string('email')->nullable();
-            $table->string('website')->nullable();
-            $table->text('address');
-            $table->boolean('is_verified')->default(false);
-            $table->string('logo_url')->nullable();
-            $table->string('facebook_link')->nullable();
-            $table->string('email_contact')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasColumn('farmers', 'is_verified')) {
+            Schema::table('farmers', function (Blueprint $table) {
+                $table->boolean('is_verified')->default(false);
+            });
+        }
     }
 
     /**
@@ -34,6 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('farmers');
+        if (Schema::hasColumn('farmers', 'is_verified')) {
+            Schema::table('farmers', function (Blueprint $table) {
+                $table->dropColumn('is_verified');
+            });
+        }
     }
 };

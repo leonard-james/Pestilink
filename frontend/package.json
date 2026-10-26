@@ -3,17 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "predev": "node scripts/copy-lightningcss.js",
+    "postinstall": "node scripts/copy-lightningcss.js",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
-    "framer-motion": "^12.23.25",
+    "framer-motion": "^12.43.0",
     "lucide-react": "^0.555.0",
-    "next": "16.0.1",
+    "next": "^16.4.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-icons": "^5.5.0"
@@ -23,9 +25,13 @@
     "@types/node": "^20.19.25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "baseline-browser-mapping": "^2.11.33",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "lightningcss-win32-x64-msvc": "1.30.2"
   }
 }

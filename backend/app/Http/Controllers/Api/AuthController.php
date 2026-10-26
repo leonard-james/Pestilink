@@ -29,6 +29,12 @@ class AuthController extends Controller
             ]);
         }
 
+        if ($user->status !== 'active') {
+            throw ValidationException::withMessages([
+                'email' => ['This account is inactive or suspended. Contact an administrator.'],
+            ]);
+        }
+
         // Load relationships based on user role
         if ($user->role === 'company') {
             $user->load('company');
@@ -64,7 +70,7 @@ class AuthController extends Controller
             
             // Farmer-specific fields
             'phone' => ['required_if:role,farmer', 'string', 'max:20'],
-            'location' => ['required_if:role,farmer', 'string', 'max:255'],
+            'location' => ['nullable', 'string', 'max:255'],
         ]);
 
         // Prevent admin registration
@@ -98,7 +104,7 @@ class AuthController extends Controller
                     'user_id' => $user->id,
                     'phone' => $validated['phone'],
                     'address' => $validated['address'] ?? null,
-                    'location' => $validated['location'],
+                    'location' => $validated['location'] ?? null,
                 ]);
                 $user->load('farmer');
             }

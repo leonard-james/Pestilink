@@ -65,6 +65,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin user management routes
     Route::prefix('users')->middleware(EnsureUserIsAdmin::class)->group(function () {
         Route::get('/', [UserController::class, 'index']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::put('/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
 });

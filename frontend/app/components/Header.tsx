@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 
 type HeaderProps = {
@@ -17,6 +18,28 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
   const isAdminPage = pathname.startsWith('/admin');
   const isCompanyPage = pathname.startsWith('/dashboard/company');
   const isFarmerPage = pathname.startsWith('/dashboard/farmer');
+  const prefetchHome = () => {
+    const token = localStorage.getItem('authToken');
+    router.prefetch(token ? '/home' : '/');
+  };
+
+  const handleSignOut = () => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      void fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }).catch((error) => console.error('Logout error:', error));
+    }
+
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    setUser(null);
+    setIsSidebarOpen(false);
+    router.replace('/login');
+  };
 
   // Load user from localStorage
   useEffect(() => {
@@ -119,6 +142,8 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
               {showNav && (
                 <>
                   <button 
+                    onMouseEnter={prefetchHome}
+                    onFocus={prefetchHome}
                     onClick={() => {
                       const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
                       if (token) {
@@ -132,27 +157,24 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                   >
                     Home
                   </button>
-                  <button 
-                    onClick={() => router.push('/products')}
+                  <Link
+                    href="/products"
                     className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
-                    type="button"
                   >
                     Products
-                  </button>
-                  <button 
-                    onClick={() => router.push('/pest-services')}
+                  </Link>
+                  <Link
+                    href="/pest-services"
                     className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
-                    type="button"
                   >
                     Pest Classification
-                  </button>
-                  <button 
-                    onClick={() => router.push('/about')}
+                  </Link>
+                  <Link
+                    href="/about"
                     className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-white/10"
-                    type="button"
                   >
                     About Us
-                  </button>
+                  </Link>
                 </>
               )}
               
@@ -171,13 +193,12 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                     </span>
                   </button>
                 ) : (
-                  <button
-                    onClick={() => router.push('/login')}
+                  <Link
+                    href="/login"
                     className="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ml-2"
-                    type="button"
                   >
                     Log In
-                  </button>
+                  </Link>
                 )
               )}
             </div>
@@ -204,12 +225,10 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
 
             <nav className="space-y-1">
               {adminNavItems.map((item) => (
-                <button
+                <Link
                   key={item.name}
-                  onClick={() => {
-                    router.push(item.path);
-                    setIsSidebarOpen(false);
-                  }}
+                  href={item.path}
+                  onClick={() => setIsSidebarOpen(false)}
                   className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
                     pathname === item.path 
                       ? 'bg-gray-800 text-white' 
@@ -230,20 +249,16 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
                     />
                   </svg>
                   {item.name}
-                </button>
+                </Link>
               ))}
             </nav>
 
             <div className="mt-auto pt-4 border-t border-gray-800">
               <button 
-                onClick={() => {
-                  // Add sign out logic here
-                  router.push('/');
-                  setIsSidebarOpen(false);
-                }}
+                onClick={handleSignOut}
                 className="w-full flex items-center justify-between px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
               >
-                <span>Sign out</span>
+                <span>Log out</span>
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
@@ -280,100 +295,71 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
 
                   <nav className="space-y-2">
                     {user.role === 'farmer' && (
-                      <button 
-                        onClick={() => {
-                          router.push('/dashboard/farmer');
-                          setIsSidebarOpen(false);
-                        }}
+                      <Link
+                        href="/dashboard/farmer"
+                        onClick={() => setIsSidebarOpen(false)}
                         className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
                       >
                         <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
                         Dashboard
-                      </button>
+                      </Link>
                     )}
                     {user.role === 'company' && (
-                      <button 
-                        onClick={() => {
-                          router.push('/dashboard/company');
-                          setIsSidebarOpen(false);
-                        }}
+                      <Link
+                        href="/dashboard/company"
+                        onClick={() => setIsSidebarOpen(false)}
                         className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
                       >
                         <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
                         Company Dashboard
-                      </button>
+                      </Link>
                     )}
-                    <button 
-                      onClick={() => {
-                        router.push('/pest-services');
-                        setIsSidebarOpen(false);
-                      }}
+                    <Link
+                      href="/pest-services"
+                      onClick={() => setIsSidebarOpen(false)}
                       className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
                     >
                       <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                       Pest Classification
-                    </button>
-                    <button 
-                      onClick={() => {
-                        router.push('/products');
-                        setIsSidebarOpen(false);
-                      }}
+                    </Link>
+                    <Link
+                      href="/products"
+                      onClick={() => setIsSidebarOpen(false)}
                       className="w-full flex items-center px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
                     >
                       <svg className="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                       Browse Products
-                    </button>
+                    </Link>
                   </nav>
                 </>
               ) : (
                 <div className="text-center py-8">
                   <p className="text-white/80 mb-4">Not logged in</p>
-                  <button
-                    onClick={() => {
-                      router.push('/login');
-                      setIsSidebarOpen(false);
-                    }}
+                  <Link
+                    href="/login"
+                    onClick={() => setIsSidebarOpen(false)}
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
                   >
                     Log In
-                  </button>
+                  </Link>
                 </div>
               )}
 
               {user && (
                 <div className="mt-auto pt-4 border-t border-gray-800">
                   <button 
-                    onClick={async () => {
-                      const token = localStorage.getItem('authToken');
-                      if (token) {
-                        try {
-                          await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/logout`, {
-                            method: 'POST',
-                            headers: {
-                              'Authorization': `Bearer ${token}`,
-                            },
-                          });
-                        } catch (e) {
-                          console.error('Logout error:', e);
-                        }
-                      }
-                      localStorage.removeItem('authToken');
-                      localStorage.removeItem('authUser');
-                      setUser(null);
-                      router.push('/');
-                      setIsSidebarOpen(false);
-                    }}
+                    onClick={handleSignOut}
                     className="w-full flex items-center justify-between px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
                   >
-                    <span>Sign out</span>
+                    <span>Log out</span>
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>

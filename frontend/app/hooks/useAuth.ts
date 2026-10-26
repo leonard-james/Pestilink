@@ -18,7 +18,15 @@ interface UseAuthReturn {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, passwordConfirmation: string, role: 'farmer' | 'company', companyData?: { company_name: string; address: string; contact_number: string }) => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    passwordConfirmation: string,
+    role: 'farmer' | 'company',
+    companyData?: { company_name: string; address: string; contact_number: string },
+    farmerData?: { phone: string }
+  ) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -68,7 +76,15 @@ export const useAuth = (): UseAuthReturn => {
   );
 
   const register = useCallback(
-    async (name: string, email: string, password: string, passwordConfirmation: string, role: 'farmer' | 'company', companyData?: { company_name: string; address: string; contact_number: string }) => {
+    async (
+      name: string,
+      email: string,
+      password: string,
+      passwordConfirmation: string,
+      role: 'farmer' | 'company',
+      companyData?: { company_name: string; address: string; contact_number: string },
+      farmerData?: { phone: string }
+    ) => {
       setIsLoading(true);
       setError(null);
 
@@ -87,16 +103,11 @@ export const useAuth = (): UseAuthReturn => {
           registerData.contact_number = companyData.contact_number;
         }
 
-        const response = await api.register(registerData);
-
-        setToken(response.token);
-        setUser(response.user);
-
-        // Store in localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('authToken', response.token);
-          localStorage.setItem('authUser', JSON.stringify(response.user));
+        if (role === 'farmer' && farmerData) {
+          registerData.phone = farmerData.phone;
         }
+
+        await api.register(registerData);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Registration failed';
         setError(message);

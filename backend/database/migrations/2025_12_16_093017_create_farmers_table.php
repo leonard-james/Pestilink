@@ -11,16 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('farmers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('phone');
-            $table->text('address');
-            $table->string('location');
-            $table->string('profile_picture')->nullable();
-            $table->boolean('is_verified')->default(false);
-            $table->timestamps();
-        });
+        if (!Schema::hasColumn('farmers', 'is_verified')) {
+            Schema::table('farmers', function (Blueprint $table) {
+                $table->boolean('is_verified')->default(false);
+            });
+        }
     }
 
     /**
@@ -28,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('farmers');
+        // The farmers table is managed by the earlier farmers migrations.
     }
 };

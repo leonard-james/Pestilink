@@ -1,25 +1,11 @@
 'use client';
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 export default function Home() {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-    setIsAuthenticated(Boolean(token));
-  }, []);
-
-  const handleGetStarted = () => {
-    router.push('/login');
-  };
-
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col">
       <Header hideAuth hideNav />
@@ -59,12 +45,12 @@ export default function Home() {
               </div>
 
               {/* Get Started Button */}
-              <button
-                onClick={handleGetStarted}
+              <Link
+                href="/login"
                 className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 Get Started →
-              </button>
+              </Link>
 
             </div>
           </div>

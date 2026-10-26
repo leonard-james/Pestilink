@@ -1,0 +1,251 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Verify frontend production build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Repair frontend installed packages",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"--prefix",
+				"frontend",
+				"--force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Recheck frontend production build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Reinstall missing motion package",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"--prefix",
+				"frontend",
+				"framer-motion@^12.23.25",
+				"--force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build frontend after dependency repair",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Reinstall Windows CSS binary",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"--prefix",
+				"frontend",
+				"lightningcss-win32-x64-msvc@^1.30.2",
+				"--force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint frontend navigation changes",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"lint",
+				"--prefix",
+				"frontend",
+				"--",
+				"app/components/Header.tsx",
+				"app/components/DashboardSidebar.tsx",
+				"app/loading.tsx"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Repair Hermes parser install",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"--prefix",
+				"frontend",
+				"--no-save",
+				"--force",
+				"hermes-parser@0.25.1"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint navigation changes",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"lint",
+				"--prefix",
+				"frontend",
+				"--",
+				"app/components/Header.tsx",
+				"app/components/DashboardSidebar.tsx",
+				"app/loading.tsx"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Remove incomplete Hermes parser",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"uninstall",
+				"--prefix",
+				"frontend",
+				"--no-save",
+				"hermes-parser"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Remove incomplete parser files",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"-e",
+				"require('fs').rmSync('frontend/node_modules/hermes-parser', { recursive: true, force: true })"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Delete broken hermes install",
+			"type": "shell",
+			"command": "Remove-Item",
+			"args": [
+				"-LiteralPath",
+				"frontend\\node_modules\\hermes-parser",
+				"-Recurse",
+				"-Force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install hermes parser locked version",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"--prefix",
+				"frontend",
+				"--no-save",
+				"--force",
+				"hermes-parser@0.25.1"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Repair Lightning CSS dependency",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"--prefix",
+				"frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Lightning CSS module",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"predev",
+				"--prefix",
+				"frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build frontend CSS pipeline",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test native binding load",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"-e",
+				"const css = require('./frontend/node_modules/lightningcss'); console.log('Lightning CSS loaded:', typeof css.transform);"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Test webpack production build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"frontend",
+				"--",
+				"--webpack"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
