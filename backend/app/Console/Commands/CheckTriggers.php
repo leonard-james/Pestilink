@@ -34,9 +34,25 @@ class CheckTriggers extends Command
 
             $this->info("✓ Migration '$migration' was run in batch {$migrationRecord->batch}");
 
-            // Get all triggers
-            $triggers = DB::select('SHOW TRIGGERS');
-            $triggerNames = array_column($triggers, 'Trigger');
+            $driver = DB::getDriverName();
+            $triggers = match ($driver) {
+                'mysql', 'mariadb' => DB::select('SHOW TRIGGERS'),
+                'pgsql' => DB::select("
+                    SELECT
+                        t.tgname AS \"Trigger\",
+                        pg_get_triggerdef(t.oid) AS \"Event\",
+                        c.relname AS \"Table\",
+                        CASE WHEN (t.tgtype & 2) = 2 THEN 'BEFORE' ELSE 'AFTER' END AS \"Timing\"
+                    FROM pg_trigger t
+                    JOIN pg_class c ON c.oid = t.tgrelid
+                    WHERE NOT t.tgisinternal
+                "),
+                default => [],
+            };
+            $triggerNames = array_map(
+                fn ($trigger) => $trigger->{'Trigger'},
+                $triggers
+            );
 
             if (empty($triggers)) {
                 $this->warn('⚠ No triggers found in the database');
@@ -49,8 +65,22 @@ class CheckTriggers extends Command
 
                 if ($exitCode === 0) {
                     $this->info('Migration re-run successfully');
-                    $triggers = DB::select('SHOW TRIGGERS');
-                    $triggerNames = array_column($triggers, 'Trigger');
+                    $triggers = DB::getDriverName() === 'pgsql'
+                        ? DB::select("
+                            SELECT
+                                t.tgname AS \"Trigger\",
+                                pg_get_triggerdef(t.oid) AS \"Event\",
+                                c.relname AS \"Table\",
+                                CASE WHEN (t.tgtype & 2) = 2 THEN 'BEFORE' ELSE 'AFTER' END AS \"Timing\"
+                            FROM pg_trigger t
+                            JOIN pg_class c ON c.oid = t.tgrelid
+                            WHERE NOT t.tgisinternal
+                        ")
+                        : DB::select('SHOW TRIGGERS');
+                    $triggerNames = array_map(
+                        fn ($trigger) => $trigger->{'Trigger'},
+                        $triggers
+                    );
                 } else {
                     $this->error('Failed to re-run migration');
                     return 1;

@@ -112,10 +112,11 @@ export default function PestsPage() {
         throw new Error('No authentication token found. Please log in again.');
       }
 
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       console.log('Attempting to delete pest with slug:', slug);
-      console.log('Using API URL:', process.env.NEXT_PUBLIC_API_URL);
+      console.log('Using API URL:', apiBase);
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pests/${slug}`, {
+      const response = await fetch(`${apiBase}/api/pests/${slug}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -354,4 +355,3 @@ export default function PestsPage() {
     </div>
   );
 }
-

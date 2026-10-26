@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
+import { api } from '../services/api';
 
 type HeaderProps = {
   hideAuth?: boolean;
@@ -26,12 +27,9 @@ export default function Header({ hideAuth = false, hideNav = false }: HeaderProp
   const handleSignOut = () => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      void fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      }).catch((error) => console.error('Logout error:', error));
+      void api.logout(token).catch((error) => {
+        console.error('Logout request failed:', error);
+      });
     }
 
     localStorage.removeItem('authToken');

@@ -246,6 +246,591 @@
 			],
 			"isBackground": false,
 			"problemMatcher": []
+		},
+		{
+			"label": "Check backend deploy files",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"status",
+				"--short",
+				"--",
+				"backend/.dockerignore",
+				"backend/Dockerfile",
+				"backend/docker",
+				"backend/config/cors.php",
+				"backend/DEPLOYMENT_RENDER.md"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check deployment file tracking",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"ls-files",
+				"--stage",
+				"--",
+				"backend/.dockerignore",
+				"backend/Dockerfile",
+				"backend/docker",
+				"backend/config/cors.php",
+				"backend/DEPLOYMENT_RENDER.md"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build backend Render Docker image",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"build",
+				"-t",
+				"pestilink-api:test",
+				"backend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check PHP deployment syntax",
+			"type": "shell",
+			"command": "php",
+			"args": [
+				"-l",
+				"backend/config/cors.php"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check render Docker setup syntax",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"diff",
+				"--check",
+				"--",
+				"backend/.dockerignore",
+				"backend/Dockerfile",
+				"backend/config/cors.php",
+				"backend/docker/000-default.conf",
+				"backend/docker/entrypoint.sh"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Docker build tools",
+			"type": "shell",
+			"command": "Get-Command",
+			"args": [
+				"docker",
+				"-ErrorAction",
+				"SilentlyContinue"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate backend Composer manifest",
+			"type": "shell",
+			"command": "composer",
+			"args": [
+				"validate",
+				"--no-check-publish",
+				"--working-dir=backend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint Render CORS config",
+			"type": "shell",
+			"command": "php",
+			"args": [
+				"-l",
+				"backend/config/cors.php"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check deployment diff whitespace",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"diff",
+				"--check"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Docker availability",
+			"type": "shell",
+			"command": "Get-Command",
+			"args": [
+				"docker",
+				"-ErrorAction",
+				"SilentlyContinue"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install Docker Desktop",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"install",
+				"--id",
+				"Docker.DockerDesktop",
+				"-e",
+				"--accept-source-agreements",
+				"--accept-package-agreements"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Docker installation",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"--version"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Docker Desktop registration",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"list",
+				"--id",
+				"Docker.DockerDesktop",
+				"-e"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Docker install paths",
+			"type": "shell",
+			"command": "Test-Path",
+			"args": [
+				"C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Docker per-user install",
+			"type": "shell",
+			"command": "Test-Path",
+			"args": [
+				"$env:LOCALAPPDATA\\Programs\\DockerDesktop\\Docker Desktop.exe"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Windows version",
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"ver"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install Docker Desktop for current user",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"install",
+				"--id",
+				"Docker.DockerDesktop",
+				"-e",
+				"--scope",
+				"user",
+				"--accept-source-agreements",
+				"--accept-package-agreements",
+				"--interactive"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Download Docker Desktop installer",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"download",
+				"--id",
+				"Docker.DockerDesktop",
+				"-e",
+				"--download-directory",
+				"C:\\Users\\Desktop\\AppData\\Local\\Temp",
+				"--accept-source-agreements"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install Docker Desktop per user",
+			"type": "shell",
+			"command": "C:\\Users\\Desktop\\AppData\\Local\\Temp\\Docker Desktop_4.96.3_Machine_X64_exe_en-US.exe",
+			"args": [
+				"install",
+				"--user"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Docker CLI files",
+			"type": "shell",
+			"command": "Test-Path",
+			"args": [
+				"C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Docker Desktop files",
+			"type": "shell",
+			"command": "Get-ChildItem",
+			"args": [
+				"-Path",
+				"C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop",
+				"-Filter",
+				"Docker Desktop.exe",
+				"-ErrorAction",
+				"SilentlyContinue"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check WSL installation state",
+			"type": "shell",
+			"command": "wsl.exe",
+			"args": [
+				"--status"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Docker package registration",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"list",
+				"--id",
+				"Docker.DockerDesktop",
+				"--exact"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate Docker Desktop",
+			"type": "shell",
+			"command": "Get-ChildItem",
+			"args": [
+				"-Path",
+				"C:\\Program Files\\Docker\\Docker",
+				"-Filter",
+				"Docker Desktop.exe",
+				"-ErrorAction",
+				"SilentlyContinue"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Docker CLI",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"--version"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build Pestilink backend image",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"build",
+				"-t",
+				"pestilink-api:test",
+				"-f",
+				"backend\\Dockerfile",
+				"backend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate Docker CLI and PATH",
+			"type": "shell",
+			"command": "$paths = @('C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe', \"$env:LOCALAPPDATA\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\", \"$env:ProgramFiles\\Docker\\Docker\\resources\\bin\\docker.exe\"); foreach ($p in $paths) { Write-Output \"$p : $(Test-Path $p)\" }; Write-Output '--- command lookup ---'; Get-Command docker -ErrorAction SilentlyContinue | Select-Object Source; Write-Output '--- PATH entries ---'; $env:PATH -split ';' | Where-Object { $_ -match 'Docker' }",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Find running Docker Desktop path",
+			"type": "shell",
+			"command": "Get-Process",
+			"args": [
+				"-Name",
+				"Docker Desktop",
+				"-ErrorAction",
+				"SilentlyContinue",
+				"|",
+				"Select-Object",
+				"-ExpandProperty",
+				"Path"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Docker CLI location",
+			"type": "shell",
+			"command": "Get-ChildItem",
+			"args": [
+				"-Path",
+				"C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin",
+				"-Filter",
+				"docker.exe",
+				"-ErrorAction",
+				"SilentlyContinue"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Search Docker installation for CLI",
+			"type": "shell",
+			"command": "where.exe",
+			"args": [
+				"/R",
+				"C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop",
+				"docker.exe"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Search Docker install for CLI",
+			"type": "shell",
+			"command": "Get-ChildItem -Path C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop -Filter docker.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check worktree changes",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"--no-pager",
+				"status",
+				"--short"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect PostgreSQL change summary",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"--no-pager",
+				"diff",
+				"--stat"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check patch whitespace",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"--no-pager",
+				"diff",
+				"--check"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check PHP runtime",
+			"type": "shell",
+			"command": "php",
+			"args": [
+				"-v"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend test suite",
+			"type": "shell",
+			"command": "php",
+			"args": [
+				"artisan",
+				"test"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Laravel tests",
+			"type": "shell",
+			"command": "php",
+			"args": [
+				"backend\\artisan",
+				"test"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect Docker CLI",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/c",
+				"\"C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" --version"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint PostgreSQL migration",
+			"type": "shell",
+			"command": "php -l backend\\database\\migrations\\2025_12_06_075854_create_database_triggers.php",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint PostgreSQL PHP changes",
+			"type": "shell",
+			"command": "php -l backend\\database\\migrations\\2025_12_06_075849_create_database_views.php; php -l backend\\database\\migrations\\2025_12_13_124437_fix_users_table_columns.php; php -l backend\\app\\Console\\Commands\\CheckTriggers.php; php -l backend\\routes\\test-triggers.php",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Laravel backend tests",
+			"type": "shell",
+			"command": "php backend\\artisan test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build PostgreSQL API container",
+			"type": "shell",
+			"command": "C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe build -t pestilink-api:test -f backend\\Dockerfile backend",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint PostgreSQL backend changes",
+			"type": "shell",
+			"command": "php -l backend\\database\\migrations\\2025_12_06_075854_create_database_triggers.php; php -l backend\\database\\migrations\\2025_12_06_075849_create_database_views.php; php -l backend\\database\\migrations\\2025_12_13_124437_fix_users_table_columns.php; php -l backend\\app\\Console\\Commands\\CheckTriggers.php; php -l backend\\routes\\test-triggers.php",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Restore missing backend test dependencies",
+			"type": "shell",
+			"command": "composer install --working-dir=backend --no-interaction --prefer-dist",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install backend dev dependencies",
+			"type": "shell",
+			"command": "composer install --dev --working-dir=backend --no-interaction --prefer-dist",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Repair incomplete PHPUnit package",
+			"type": "shell",
+			"command": "composer reinstall phpunit/phpunit --working-dir=backend --no-interaction --prefer-dist",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run backend tests from project folder",
+			"type": "shell",
+			"command": "Set-Location backend; php artisan test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify Render Docker CLI path",
+			"type": "shell",
+			"command": "C:\\Users\\Desktop\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe --version",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Final diff whitespace check",
+			"type": "shell",
+			"command": "git --no-pager diff --check",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check final worktree status",
+			"type": "shell",
+			"command": "git --no-pager status --short",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect unexpected Render config change",
+			"type": "shell",
+			"command": "git --no-pager diff -- render.yaml; git ls-files --stage render.yaml",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify PHP database modules",
+			"type": "shell",
+			"command": "php -m",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Restore empty Render config",
+			"type": "shell",
+			"command": "git restore -- render.yaml",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Final PostgreSQL checks",
+			"type": "shell",
+			"command": "php -l backend\\public\\check-triggers.php; git --no-pager diff --check; git --no-pager status --short",
+			"isBackground": false,
+			"problemMatcher": []
 		}
 	]
 }

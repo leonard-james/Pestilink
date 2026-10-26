@@ -189,10 +189,8 @@ export default function DashboardSidebar({ role }: DashboardSidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => {
-            // Fix exact path matching to prevent multiple selections
-            const isActive = pathname === item.path || 
-              (item.path !== '/admin' && pathname.startsWith(item.path + '/')) ||
-              (item.path === '/admin' && pathname === '/admin');
+            const isActive = pathname === item.path ||
+              (item.name !== 'Dashboard' && pathname.startsWith(item.path + '/'));
             return (
               <Link
                 key={item.path}

@@ -8,14 +8,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      * Creates database views for security, clean queries, and access control.
-     * Note: Views and triggers require MySQL/MariaDB. SQLite does not support these features.
+     * SQLite does not support the views used by this application.
      */
     public function up(): void
     {
         $driver = DB::getDriverName();
         
-        if (!in_array($driver, ['mysql', 'mariadb'])) {
-            // Skip for SQLite and other databases
+        if (!in_array($driver, ['mysql', 'mariadb', 'pgsql'])) {
             return;
         }
 
@@ -60,7 +59,7 @@ return new class extends Migration
                 cs.created_at
             FROM company_services cs
             JOIN companies c ON c.id = cs.company_id
-            WHERE cs.is_active = 1
+            WHERE cs.is_active = TRUE
         ");
 
         // View 4: view_admin_logs - View for admin to quickly see all system logs
@@ -118,16 +117,16 @@ return new class extends Migration
     {
         $driver = DB::getDriverName();
         
-        if (!in_array($driver, ['mysql', 'mariadb'])) {
+        if (!in_array($driver, ['mysql', 'mariadb', 'pgsql'])) {
             return;
         }
 
+        DB::statement("DROP VIEW IF EXISTS view_company_bookings");
+        DB::statement("DROP VIEW IF EXISTS view_user_bookings");
+        DB::statement("DROP VIEW IF EXISTS view_all_bookings");
         DB::statement("DROP VIEW IF EXISTS view_active_users");
         DB::statement("DROP VIEW IF EXISTS view_company_overview");
         DB::statement("DROP VIEW IF EXISTS view_service_catalog");
         DB::statement("DROP VIEW IF EXISTS view_admin_logs");
-        DB::statement("DROP VIEW IF EXISTS view_all_bookings");
-        DB::statement("DROP VIEW IF EXISTS view_company_bookings");
-        DB::statement("DROP VIEW IF EXISTS view_user_bookings");
     }
 };

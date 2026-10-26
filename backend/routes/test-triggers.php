@@ -8,8 +8,20 @@ Route::get('/test/triggers', function () {
         // Check database connection
         DB::connection()->getPdo();
         
-        // Get all triggers
-        $triggers = DB::select("SHOW TRIGGERS");
+        $triggers = match (DB::getDriverName()) {
+            'mysql', 'mariadb' => DB::select('SHOW TRIGGERS'),
+            'pgsql' => DB::select("
+                SELECT
+                    t.tgname AS \"Trigger\",
+                    pg_get_triggerdef(t.oid) AS \"Event\",
+                    c.relname AS \"Table\",
+                    CASE WHEN (t.tgtype & 2) = 2 THEN 'BEFORE' ELSE 'AFTER' END AS \"Timing\"
+                FROM pg_trigger t
+                JOIN pg_class c ON c.oid = t.tgrelid
+                WHERE NOT t.tgisinternal
+            "),
+            default => [],
+        };
         
         if (empty($triggers)) {
             return response()->json([

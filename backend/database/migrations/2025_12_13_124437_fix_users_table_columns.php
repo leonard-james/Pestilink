@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,23 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, check if we need to modify the role column
-        if (Schema::hasColumn('users', 'role')) {
-            // Check if the role column is an enum with the correct values
-            $columnType = DB::select(
-                "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'role'",
-                [config('database.connections.mysql.database')]
-            );
-
-            if (!empty($columnType) && !str_contains($columnType[0]->COLUMN_TYPE, "enum('admin','company','farmer')")) {
-                // If the role column exists but with different values, modify it
-                DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'company', 'farmer') NOT NULL DEFAULT 'farmer'");
-            }
-        } else {
-            // Add role if it doesn't exist
+        if (!Schema::hasColumn('users', 'role')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->enum('role', ['admin', 'company', 'farmer'])->default('farmer')->after('email_verified_at');
+                $table->enum('role', ['admin', 'company', 'farmer'])->default('farmer');
             });
         }
 

@@ -120,28 +120,18 @@ export const useAuth = (): UseAuthReturn => {
   );
 
   const logout = useCallback(async () => {
-    setIsLoading(true);
     setError(null);
+    setUser(null);
+    setToken(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+    }
 
-    try {
-      if (token) {
-        await api.logout(token);
-      }
-
-      setUser(null);
-      setToken(null);
-
-      // Clear localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Logout failed';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
+    if (token) {
+      void api.logout(token).catch((err) => {
+        console.error('Logout request failed:', err);
+      });
     }
   }, [token]);
 
